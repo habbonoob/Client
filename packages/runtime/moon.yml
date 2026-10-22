@@ -1,0 +1,12 @@
+$schema: '../../.moon/cache/schemas/project.json'
+
+language: 'typescript'
+type: 'library'
+
+tasks:
+  typecheck:
+    command: 'tsc --noEmit -p .'
+    inputs:
+      - 'src/**/*'
+      - 'tsconfig.json'
+      - '/tsconfig.base.json'

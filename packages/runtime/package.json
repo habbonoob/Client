@@ -1,0 +1,15 @@
+{
+  "name": "@habbo-pixi/runtime",
+  "description": "The platform the converted client runs on: display list (PIXI), text (AIR's native text engine), events, networking, files and the AS3 language helpers the transpiler's output uses.",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "fflate": "^0.8.3",
+    "pixi-filters": "^6.1.5",
+    "pixi.js": "^8.21.0"
+  }
+}

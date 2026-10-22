@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    /* the editor's own code is written strictly (the null-check exemption is for the converted AS3) */
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "useUnknownInCatchVariables": true
+  },
+  "include": ["src"]
+}

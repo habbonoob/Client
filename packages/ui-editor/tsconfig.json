@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    /* the client's modules, as client-next resolves them */
+    "paths": { "@/*": ["../client-next/src/*"] }
+  },
+  /* plus the runtime's global declarations (they apply only where they are compiled) */
+  "include": ["src", "../runtime/src/**/*.d.ts"]
+}

@@ -1,0 +1,57 @@
+$schema: '../../.moon/cache/schemas/project.json'
+
+language: 'typescript'
+type: 'application'
+
+# client-next is an application too (moon keeps applications from depending on each other): its source and
+# pack are this project's inputs instead (see the tasks)
+dependsOn:
+  - 'runtime'
+
+tasks:
+  # the page, and its Node side (the Vite config, the desktop app, the layout API)
+  typecheck:
+    script: 'tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json'
+    inputs:
+      - 'src/**/*'
+      - 'vite.config.ts'
+      - 'layoutApi.ts'
+      - 'electron/**/*'
+      - 'tsconfig*.json'
+      - '/packages/asset-overlay/assetOverlay.ts'
+      - '/tsconfig.base.json'
+      - '/packages/client-next/src/**/*'
+      - '/packages/runtime/src/**/*'
+
+  dev:
+    command: 'vite'
+    preset: 'server'
+
+  build:
+    command: 'vite build'
+    deps:
+      - '~:typecheck'
+    inputs:
+      - 'src/**/*'
+      - 'index.html'
+      - 'vite.config.ts'
+      - '/packages/client-next/src/**/*'
+      - '/packages/runtime/src/**/*'
+    outputs:
+      - 'dist'
+
+  # the desktop app (Electron) on the build
+  app:
+    command: 'electron .'
+    deps:
+      - '~:build'
+    preset: 'server'
+
+  # the desktop app on the dev server (hot reload)
+  app-dev:
+    command: 'electron .'
+    deps:
+      - '~:dev'
+    env:
+      UI_EDITOR_DEV_SERVER: 'http://127.0.0.1:5190'
+    preset: 'server'

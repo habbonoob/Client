@@ -1,0 +1,41 @@
+import type { IMessageEvent } from '@/com/sulake/core/communication/messages/IMessageEvent';
+import type { Map as UtilsMap } from '@/com/sulake/core/utils/Map';
+import type { IMarketPlaceOfferData } from '@/com/sulake/habbo/catalog/marketplace/IMarketPlaceOfferData';
+import type { IMarketPlaceVisualization } from '@/com/sulake/habbo/catalog/marketplace/IMarketPlaceVisualization';
+import type { MarketplaceItemStats } from '@/com/sulake/habbo/catalog/marketplace/MarketplaceItemStats';
+import type { IHabboLocalizationManager } from '@/com/sulake/habbo/localization/IHabboLocalizationManager';
+import type { IHabboWindowManager } from '@/com/sulake/habbo/window/IHabboWindowManager';
+
+export interface IMarketPlace {
+    get windowManager(): IHabboWindowManager;
+    get localization(): IHabboLocalizationManager;
+    registerVisualization(param1?: IMarketPlaceVisualization): void;
+    onOffers(param1: IMessageEvent): void;
+    onOwnOffers(param1: IMessageEvent): void;
+    onBuyResult(param1: IMessageEvent): void;
+    onCancelResult(param1: IMessageEvent): void;
+    onCancelAllResult(param1: IMessageEvent): void;
+    onClearOwnHistoryResult(param1: IMessageEvent): void;
+    requestOffersByName(param1: string, param2?: boolean): void;
+    requestOffersByPrice(param1: number, param2?: boolean): void;
+    requestOffers(param1: number, param2: number, param3: string, param4: number, param5?: boolean): void;
+    refreshOffers(): void;
+    requestOwnItems(param1?: number): void;
+    requestItemStats(param1: IMarketPlaceOfferData): void;
+    buyOffer(param1: number): void;
+    redeemExpiredOffer(param1: number): void;
+    recallAllOffers(): void;
+    clearOwnHistory(param1: number): void;
+    get ownOffersCategory(): number;
+    latestOffers(): UtilsMap;
+    latestOwnOffers(): UtilsMap;
+    totalItemsFound(): number;
+    set itemStats(param1: MarketplaceItemStats);
+    get itemStats(): MarketplaceItemStats;
+    get creditsWaiting(): number;
+    get averagePricePeriod(): number;
+    set averagePricePeriod(param1: number);
+    getNameLocalizationKey(param1: IMarketPlaceOfferData): string;
+    getDescriptionLocalizationKey(param1: IMarketPlaceOfferData): string;
+    isAccountSafetyLocked(): boolean;
+}

@@ -1,0 +1,22 @@
+{
+  "name": "@habbo-pixi/ui-editor",
+  "description": "The window layout editor, in the browser (its dev server) or as a desktop app (Electron): opens the client's layouts (or a new one), shows them through client-next's own window system, and saves them back.",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "app": "vite build && electron ."
+  },
+  "dependencies": {
+    "@habbo-pixi/runtime": "*",
+    "pixi.js": "^8.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.3",
+    "vite": "^8.3.0",
+    "electron": "^44.4.5"
+  },
+  "main": "electron/main.ts"
+}

@@ -1,0 +1,42 @@
+diff a/packages/client/src/com/sulake/core/utils/ClassUtils.ts b/packages/client/src/com/sulake/core/utils/ClassUtils.ts	(rejected hunks)
+@@ -1,20 +1,20 @@
+-import { describeType } from '@habbo-pixi/runtime/utils/describeType';
+-import { getQualifiedClassName } from '@habbo-pixi/runtime/utils/getQualifiedClassName';
+-
+-export class ClassUtils {
+-    public static implementsInterface(param1: any, param2: any): boolean {
+-        return describeType(param1).child("factory").child("implementsInterface").filter(($x: XML) => $x.attribute("type")?.toString() == getQualifiedClassName(param2)).length() > 0;
+-    }
+-
+-    public static getSimpleQualifiedClassName(param1: any): string {
+-        let _loc3_: string = getQualifiedClassName(param1);
+-        let _loc2_: number = _loc3_.indexOf("::");
+-        if (_loc2_ > 0) {
+-            return _loc3_.substr(_loc2_ + 2, _loc3_.length);
+-        }
+-        return _loc3_;
+-    }
+-
+-    constructor() {
+-    }
+-}
++import { getQualifiedClassName } from '@habbo-pixi/runtime/utils/getQualifiedClassName';
++
++export class ClassUtils {
++    public static implementsInterface(param1: any, param2: any): boolean {
++        // an interface is its brand symbol, which every implementing class carries on its prototype
++        return typeof param1 === "function" && typeof param2 === "symbol" && param2 in param1.prototype;
++    }
++
++    public static getSimpleQualifiedClassName(param1: any): string {
++        let _loc3_: string = getQualifiedClassName(param1);
++        let _loc2_: number = _loc3_.indexOf("::");
++        if (_loc2_ > 0) {
++            return _loc3_.substr(_loc2_ + 2, _loc3_.length);
++        }
++        return _loc3_;
++    }
++
++    constructor() {
++    }
++}

@@ -1,0 +1,9 @@
+diff a/packages/client/src/com/sulake/habbo/communication/messages/incoming/handshake/DisconnectReasonEvent.ts b/packages/client/src/com/sulake/habbo/communication/messages/incoming/handshake/DisconnectReasonEvent.ts	(rejected hunks)
+@@ -2,6 +2,5 @@ import { stringOrNull } from '@habbo-pixi/runtime/lang/cast';
+ import { Dictionary } from '@habbo-pixi/runtime/utils/Dictionary';
+ import type { IMessageEvent } from '@/com/sulake/core/communication/messages/IMessageEvent';
+-import { describeType } from '@habbo-pixi/runtime/utils/describeType';
+-import type { XML } from '@habbo-pixi/runtime/xml/XML';
++import { describeType, type TypeDescription } from '@habbo-pixi/runtime/utils/describeType';
+ import { DisconnectReasonParser, MessageEvent } from '@/generated/internal';
+ 

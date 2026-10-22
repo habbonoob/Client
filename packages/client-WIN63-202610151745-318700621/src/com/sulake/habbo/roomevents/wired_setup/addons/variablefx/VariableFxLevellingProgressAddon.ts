@@ -1,0 +1,36 @@
+import { registerClassName } from '@habbo-pixi/runtime/utils/getQualifiedClassName';
+import type { VariableFxEditorState } from '@/com/sulake/habbo/roomevents/wired_setup/addons/variablefx/model/VariableFxEditorState';
+import type { PresetManager } from '@/com/sulake/habbo/roomevents/wired_setup/uibuilder/PresetManager';
+import type { WiredUIPreset } from '@/com/sulake/habbo/roomevents/wired_setup/uibuilder/presets/WiredUIPreset';
+import { AddonCodes } from '@/com/sulake/habbo/roomevents/wired_setup/addons/AddonCodes';
+import { _SafeCls_6111 } from '@/com/sulake/habbo/roomevents/wired_setup/addons/variablefx/_SafeCls_6111';
+
+export class VariableFxLevellingProgressAddon extends _SafeCls_6111 {
+    static { registerClassName(this, 'com.sulake.habbo.roomevents.wired_setup.addons.variablefx::VariableFxLevellingProgressAddon'); }
+
+    constructor() {
+        super();
+    }
+
+    public override get code(): number {
+        return AddonCodes.VARIABLE_FX_LEVELLING_PROGRESS;
+    }
+
+    protected override get categoryId(): number {
+        return 2;
+    }
+
+    protected override createTopInfoPreset(param1: PresetManager): WiredUIPreset {
+        return param1.createUsageInfoSection("${wiredfurni.params.variablefx.levelling_progress.info}");
+    }
+
+    protected override readIntParams(param1: any[], param2: VariableFxEditorState): void {
+        super.readIntParams(param1, param2);
+        param2.subRendererId = param1[21] | 0;
+    }
+
+    protected override writeIntParams(param1: any[], param2: VariableFxEditorState): void {
+        super.writeIntParams(param1, param2);
+        param1[21] = param2.subRendererId;
+    }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "habbo-pixi",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "typecheck": "moon run :typecheck",
+    "dev": "moon run client-next:dev",
+    "build": "moon run client-next:build",
+    "preview": "moon run client-next:preview",
+    "debug": "moon run client-next:debug",
+    "serve": "moon run client-next:serve",
+    "editor": "moon run editor:dev",
+    "ui-editor": "moon run ui-editor:dev",
+    "ui-editor:app": "moon run ui-editor:app",
+    "ui-editor:app-dev": "moon run ui-editor:app-dev",
+    "editor:app": "moon run editor:app",
+    "editor:app-dev": "moon run editor:app-dev",
+    "teststuff": "moon run client-WIN63-202610131318-860371703:serve",
+    "test": "moon run client-WIN63-202610151745-318700621:serve",
+    "cms": "moon run cms:dev",
+    "cms:build": "moon run cms:build"
+  },
+  "devDependencies": {
+    "@moonrepo/cli": "^1.41.0",
+    "typescript": "~6.0.2"
+  }
+}

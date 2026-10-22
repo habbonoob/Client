@@ -1,0 +1,34 @@
+$schema: '../../.moon/cache/schemas/project.json'
+
+language: 'typescript'
+type: 'application'
+
+tasks:
+  typecheck:
+    command: 'tsc --noEmit -p .'
+    inputs:
+      - 'src/**/*'
+      - 'tsconfig.json'
+      - 'vite.config.ts'
+      - '/tsconfig.base.json'
+
+  build:
+    command: 'vite build'
+    deps:
+      - '~:typecheck'
+    inputs:
+      - 'src/**/*'
+      - 'public/**/*'
+      - 'index.html'
+      - 'vite.config.ts'
+    outputs:
+      - 'dist'
+
+  # the website on Vite's dev server, with /api and the hotel's other paths sent to the server on localhost:8080
+  dev:
+    command: 'vite'
+    preset: 'server'
+
+  preview:
+    command: 'vite preview'
+    preset: 'server'

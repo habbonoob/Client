@@ -1,0 +1,26 @@
+import { registerClassName } from '@habbo-pixi/runtime/utils/getQualifiedClassName';
+import type { IMessageDataWrapper } from '@/com/sulake/core/communication/messages/IMessageDataWrapper';
+import type { IMessageParser } from '@/com/sulake/core/communication/messages/IMessageParser';
+
+export class FurniListRemoveParser implements IMessageParser {
+    static { registerClassName(this, 'com.sulake.habbo.communication.messages.parser.inventory.furni::FurniListRemoveParser'); }
+
+    constructor() {
+    }
+
+    declare private _itemId: number;
+    static { (this.prototype as any)._itemId = 0; }
+
+    public get stripId(): number {
+        return this._itemId;
+    }
+
+    public parse(param1: IMessageDataWrapper): boolean {
+        this._itemId = param1.readInteger();
+        return true;
+    }
+
+    public flush(): boolean {
+        return true;
+    }
+}

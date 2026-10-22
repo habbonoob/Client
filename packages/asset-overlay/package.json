@@ -1,0 +1,7 @@
+{
+  "name": "@habbo-pixi/asset-overlay",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "The asset editors' edits to the client's asset pack (asset-overlay/), kept apart from the generated pack."
+}

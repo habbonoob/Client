@@ -1,0 +1,12 @@
+$schema: './cache/schemas/toolchain.json'
+
+# Node and npm as installed on the machine (no version pinned: moon uses the ones on PATH)
+node:
+  packageManager: 'npm'
+  # the workspace's npm install is run by hand; moon doesn't sync or install on each run
+  syncProjectWorkspaceDependencies: false
+  inferTasksFromScripts: false
+
+typescript:
+  syncProjectReferences: false
+  routeOutDirToCache: false

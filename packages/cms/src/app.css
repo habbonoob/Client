@@ -1,0 +1,454 @@
+@import "tailwindcss";
+@import "@fontsource-variable/figtree";
+@import "@fontsource-variable/bricolage-grotesque";
+@import "@fontsource-variable/pixelify-sans";
+
+/* Sunset Lobby: a pixel-art hotel lobby at golden hour. Plum and tangerine carry the hotel, pool teal does the quiet
+   work (links, info). Dark mode swaps the variables (data-theme on <html>, set from the system in main.tsx), so
+   utilities never need a second class. */
+@theme {
+  --color-bg: #FBF1E8;
+  --color-surface: #FFFAF5;
+  --color-surface-2: #F5E6D8;
+  --color-line: #E5D0BE;
+  --color-ink: #2A1A2E;
+  --color-ink-2: #5B465D;
+  --color-ink-3: #735E72;
+  --color-primary: #C2410C;
+  --color-primary-hover: #A8380A;
+  --color-primary-press: #7F2A08;
+  --color-on-primary: #FFFFFF;
+  --color-primary-soft: #FCE3D3;
+  --color-primary-ink: #9A3309;
+  --color-accent: #0E7470;
+  --color-accent-soft: #D6EFEC;
+  --color-plum: #2B1B44;
+  --color-on-plum: #F7EBDF;
+  --color-on-plum-2: #D9C8D6;
+  --color-cream: #FFF4E6;
+  --color-sun: #FFE7A8;
+  --color-ok: #1C6E46;
+  --color-ok-soft: #DDF2E4;
+  --color-err: #B42318;
+  --color-err-soft: #FDE4E1;
+  --color-info: #0E6A75;
+  --color-info-soft: #DAF0F2;
+  --color-focus: #2457D6;
+
+  --font-display: "Bricolage Grotesque Variable", "Figtree Variable", ui-sans-serif, sans-serif;
+  --font-sans: "Figtree Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-pixel: "Pixelify Sans Variable", ui-monospace, monospace;
+
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  --shadow-card: 0 1px 0 rgb(42 26 46 / .05), 0 14px 32px -18px rgb(42 26 46 / .4);
+  --shadow-lifted: 0 2px 0 rgb(42 26 46 / .05), 0 30px 60px -28px rgb(42 26 46 / .55);
+}
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+@layer base {
+  [data-theme="dark"] {
+    --color-bg: #17111F;
+    --color-surface: #211A2B;
+    --color-surface-2: #2C2337;
+    --color-line: #3E3149;
+    --color-ink: #F7EBDF;
+    --color-ink-2: #D2BFCB;
+    --color-ink-3: #AE97A9;
+    --color-primary: #FF8F5A;
+    --color-primary-hover: #FFA77B;
+    --color-primary-press: #B85A2E;
+    --color-on-primary: #2A1206;
+    --color-primary-soft: #3D2530;
+    --color-primary-ink: #FFB08A;
+    --color-accent: #5FD0C6;
+    --color-accent-soft: #183A3A;
+    --color-plum: #0F0A16;
+    --color-on-plum-2: #CDB9C6;
+    --color-ok: #72D69E;
+    --color-ok-soft: #173326;
+    --color-err: #FF8A7E;
+    --color-err-soft: #3A1C1E;
+    --color-info: #7AD3DE;
+    --color-info-soft: #163238;
+    --color-focus: #9DB8FF;
+    --shadow-card: 0 1px 0 rgb(0 0 0 / .35), 0 16px 36px -18px rgb(0 0 0 / .8);
+    --shadow-lifted: 0 2px 0 rgb(0 0 0 / .35), 0 30px 60px -24px rgb(0 0 0 / .85);
+  }
+
+  html {
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a {
+    color: var(--color-accent);
+    text-underline-offset: 3px;
+  }
+
+  a:hover {
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
+  }
+}
+
+@layer components {
+  /* Habbo's art is drawn at native size and scaled by whole numbers, never smoothed */
+  .pix {
+    image-rendering: pixelated;
+  }
+
+  .lab {
+    font-family: var(--font-pixel);
+    font-size: 13px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--color-ink-3);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 44px;
+    padding: 0 20px;
+    border: 0;
+    border-radius: var(--radius-md);
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: transform .12s ease, background-color .12s ease, box-shadow .12s ease;
+  }
+
+  /* the hard "lip" under a button is the one pixel-game nod in the UI: it presses down on click */
+  .btn-primary {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    box-shadow: 0 3px 0 var(--color-primary-press);
+  }
+
+  .btn-primary:hover {
+    background: var(--color-primary-hover);
+    color: var(--color-on-primary);
+  }
+
+  .btn-primary:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 var(--color-primary-press);
+  }
+
+  .btn-secondary {
+    background: var(--color-surface);
+    color: var(--color-ink);
+    box-shadow: inset 0 0 0 1.5px var(--color-line), 0 3px 0 var(--color-line);
+  }
+
+  .btn-secondary:hover {
+    background: var(--color-surface-2);
+    color: var(--color-ink);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--color-ink-2);
+  }
+
+  .btn-ghost:hover {
+    background: var(--color-surface-2);
+    color: var(--color-ink);
+  }
+
+  .btn-danger {
+    background: var(--color-err);
+    color: var(--color-bg);
+    box-shadow: 0 3px 0 rgb(0 0 0 / .35);
+  }
+
+  .btn-quiet-danger {
+    background: transparent;
+    color: var(--color-err);
+  }
+
+  .btn-quiet-danger:hover {
+    background: var(--color-err-soft);
+  }
+
+  .btn-sm {
+    min-height: 36px;
+    padding: 0 14px;
+    font-size: 14px;
+    border-radius: var(--radius-sm);
+  }
+
+  .btn[disabled] {
+    opacity: .5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn[aria-busy="true"] {
+    cursor: progress;
+  }
+
+  .btn-enter {
+    min-height: 96px;
+    padding: 0 36px 0 18px;
+    border-radius: 24px;
+    gap: 18px;
+    text-align: left;
+    white-space: normal;
+    box-shadow: 0 6px 0 var(--color-primary-press), 0 24px 48px -22px var(--color-primary);
+  }
+
+  .btn-enter:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 var(--color-primary-press);
+  }
+
+  .enter-t {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+  }
+
+  .enter-s {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.3;
+    opacity: .92;
+  }
+
+  .enter-ic {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    background: rgb(255 250 245 / .92);
+    color: #7F2A08;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .input {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 48px;
+    padding: 12px 14px;
+    border-radius: var(--radius-md);
+    border: 1.5px solid var(--color-line);
+    background: var(--color-surface);
+    color: var(--color-ink);
+    font: 400 16px/1.4 var(--font-sans);
+  }
+
+  .input::placeholder {
+    color: var(--color-ink-3);
+  }
+
+  .input:hover {
+    border-color: var(--color-ink-3);
+  }
+
+  .input:focus {
+    outline: none;
+    border-color: var(--color-focus);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-focus) 28%, transparent);
+  }
+
+  .input.err {
+    border-color: var(--color-err);
+  }
+
+  .input.ok {
+    border-color: var(--color-ok);
+  }
+
+  .input[disabled] {
+    background: var(--color-surface-2);
+    color: var(--color-ink-3);
+    cursor: not-allowed;
+  }
+
+  .hint {
+    font-size: 14px;
+    color: var(--color-ink-3);
+  }
+
+  .msg-err {
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--color-err);
+    font-weight: 600;
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+  }
+
+  .msg-ok {
+    font-size: 14px;
+    color: var(--color-ok);
+    font-weight: 600;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .meter {
+    display: flex;
+    gap: 4px;
+  }
+
+  .meter i {
+    display: block;
+    height: 6px;
+    flex: 1;
+    background: var(--color-line);
+  }
+
+  .navlink {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 14px;
+    border-radius: var(--radius-sm);
+    color: var(--color-ink-2);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .navlink:hover,
+  .navlink[aria-current="page"] {
+    background: var(--color-surface-2);
+    color: var(--color-ink);
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-family: var(--font-pixel);
+    font-size: 12px;
+    letter-spacing: .04em;
+  }
+
+  .card-link {
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+
+  .card-link:hover {
+    color: var(--color-primary-ink);
+    text-decoration: underline;
+  }
+
+  /* the whole card is the article's link: the title's link stretches over it */
+  .card-link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+
+  .mono {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+
+  .dots {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+  }
+
+  .dots i {
+    display: block;
+    width: 6px;
+    height: 6px;
+    background: currentColor;
+    animation: blink 1.2s steps(1) infinite;
+  }
+
+  .dots i:nth-child(2) {
+    animation-delay: .4s;
+  }
+
+  .dots i:nth-child(3) {
+    animation-delay: .8s;
+  }
+
+  /* the client is loaded and running */
+  .live {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #3FD08A;
+    box-shadow: 0 0 0 3px rgb(63 208 138 / .28);
+  }
+
+  /* the hotel's floating site bar */
+  .pl {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 14px;
+    border-radius: 999px;
+    color: #F7EBDF;
+    text-decoration: none;
+    font: 600 15px/1 var(--font-sans);
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .pl:hover {
+    background: rgb(255 244 230 / .12);
+    color: #FFFFFF;
+  }
+
+  .prose p {
+    margin: 0 0 1em;
+  }
+
+  .prose p:last-child {
+    margin-bottom: 0;
+  }
+}
+
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: .25;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -1,0 +1,61 @@
+import { registerClassName } from '@habbo-pixi/runtime/utils/getQualifiedClassName';
+
+export class WindowParam {
+    static { registerClassName(this, 'com.sulake.core.window.enum::WindowParam'); }
+
+    public static readonly _SafeStr_7894: number = 0;
+    public static readonly _SafeStr_8179: number = 1;
+    public static readonly _SafeStr_7710: number = 3;
+    public static readonly _SafeStr_8557: number = 5;
+    public static readonly WINDOW_PARAM_INTERNAL_EVENT_HANDLING: number = 9;
+    public static readonly _SafeStr_7745: number = 16;
+    public static readonly _SafeStr_8709: number = 32;
+    public static readonly WINDOW_PARAM_RELATIVE_HORIZONTAL_SCALE_FIXED: number = 0;
+    public static readonly WINDOW_PARAM_RELATIVE_HORIZONTAL_SCALE_MOVE: number = 64;
+    public static readonly WINDOW_PARAM_RELATIVE_HORIZONTAL_SCALE_STRECH: number = 128;
+    public static readonly WINDOW_PARAM_RELATIVE_HORIZONTAL_SCALE_CENTER: number = 192;
+    public static readonly WINDOW_PARAM_RELATIVE_HORIZONTAL_SCALE_MASK: number = 192;
+    public static readonly WINDOW_PARAM_RELATIVE_VERTICAL_SCALE_FIXED: number = 0;
+    public static readonly WINDOW_PARAM_RELATIVE_VERTICAL_SCALE_MOVE: number = 1024;
+    public static readonly WINDOW_PARAM_RELATIVE_VERTICAL_SCALE_STRECH: number = 2048;
+    public static readonly WINDOW_PARAM_RELATIVE_VERTICAL_SCALE_CENTER: number = 3072;
+    public static readonly WINDOW_PARAM_RELATIVE_VERTICAL_SCALE_MASK: number = 3072;
+    public static readonly WINDOW_PARAM_RELATIVE_SCALE_FIXED: number = 0;
+    public static readonly WINDOW_PARAM_RELATIVE_SCALE_MOVE: number = 1088;
+    public static readonly WINDOW_PARAM_RELATIVE_SCALE_STRECH: number = 2176;
+    public static readonly WINDOW_PARAM_RELATIVE_SCALE_CENTER: number = 3264;
+    public static readonly _SafeStr_8105: number = 131072;
+    public static readonly _SafeStr_8544: number = 147456;
+    public static readonly WINDOW_PARAM_MOUSE_DRAGGING_TARGET: number = 32768;
+    public static readonly WINDOW_PARAM_MOUSE_DRAGGING_TRIGGER: number = 257;
+    public static readonly _SafeStr_8440: number = 33025;
+    public static readonly WINDOW_PARAM_MOUSE_SCALING_TARGET: number = 65536;
+    public static readonly WINDOW_PARAM_HORIZONTAL_MOUSE_SCALING_TRIGGER: number = 4096;
+    public static readonly WINDOW_PARAM_VERTICAL_MOUSE_SCALING_TRIGGER: number = 8192;
+    public static readonly WINDOW_PARAM_MOUSE_SCALING_TRIGGER: number = 12288;
+    public static readonly WINDOW_PARAM_MOUSE_SCALING_TRIGGER_MASK: number = 12288;
+    public static readonly _SafeStr_7864: number = 77824;
+    public static readonly _SafeStr_8632: number = 0;
+    public static readonly WINDOW_PARAM_ON_ACCOMMODATE_ALIGN_RIGHT: number = 262144;
+    public static readonly WINDOW_PARAM_ON_ACCOMMODATE_ALIGN_CENTER: number = 786432;
+    public static readonly _SafeStr_8063: number = 0;
+    public static readonly WINDOW_PARAM_ON_ACCOMMODATE_ALIGN_BOTTOM: number = 1048576;
+    public static readonly _SafeStr_7991: number = 3145728;
+    public static readonly WINDOW_PARAM_ON_ACCOMMODATE_ALIGN_MASK: number = 3932160;
+    public static readonly _SafeStr_7881: number = 0;
+    public static readonly WINDOW_PARAM_ON_RESIZE_ALIGN_CENTER: number = 786432;
+    public static readonly WINDOW_PARAM_ON_RESIZE_ALIGN_RIGHT: number = 262144;
+    public static readonly _SafeStr_8422: number = 0;
+    public static readonly _SafeStr_8292: number = 3145728;
+    public static readonly WINDOW_PARAM_ON_RESIZE_ALIGN_BOTTOM: number = 1048576;
+    public static readonly WINDOW_PARAM_ON_RESIZE_ALIGN_HORIZONTAL: number = 786432;
+    public static readonly WINDOW_PARAM_ON_RESIZE_ALIGN_VERTICAL: number = 3145728;
+    public static readonly _SafeStr_8203: number = 4194304;
+    public static readonly _SafeStr_7715: number = 8388608;
+    public static readonly _SafeStr_7653: number = 12582912;
+    public static readonly _SafeStr_8059: number = 1;
+    public static readonly _SafeStr_8183: number = 33;
+    public static readonly WINDOW_PARAM_EMBEDDED_CONTROLLER: number = 51;
+    public static readonly WINDOW_PARAM_FORCE_CLIPPING: number = 1073741824;
+    public static readonly _SafeStr_8229: number = 2147483648;
+}

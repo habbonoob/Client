@@ -1,0 +1,42 @@
+import type { Triggerable } from '@/com/sulake/habbo/communication/messages/incoming/userdefinedroomevents/Triggerable';
+import type { GuildMembershipsMessageEvent } from '@/com/sulake/habbo/communication/messages/incoming/users/GuildMembershipsMessageEvent';
+import type { HabboUserDefinedRoomEvents } from '@/com/sulake/habbo/roomevents/HabboUserDefinedRoomEvents';
+import type { PresetManager } from '@/com/sulake/habbo/roomevents/wired_setup/uibuilder/PresetManager';
+import type { WiredStyle } from '@/com/sulake/habbo/roomevents/wired_setup/uibuilder/styles/WiredStyle';
+import type { WiredUIBuilder } from '@/com/sulake/habbo/roomevents/wired_setup/uibuilder/WiredUIBuilder';
+
+export interface Element {
+    get code(): number;
+    get negativeCode(): number;
+    setRoomEvents(param1: HabboUserDefinedRoomEvents): void;
+    onInit(param1: HabboUserDefinedRoomEvents): void;
+    onEditStart(param1: Triggerable): void;
+    onEditInitialized(): void;
+    onEditEnd(): void;
+    readIntParamsFromForm(): any[];
+    readVariableIdsFromForm(): any[];
+    readStringParamFromForm(): string;
+    get hasStateSnapshot(): boolean;
+    validate(): string;
+    get inputMode(): number;
+    buildInputs(param1: PresetManager, param2: WiredStyle, param3: WiredUIBuilder): void;
+    furniSelectionTitle(param1: number): string;
+    userSelectionTitle(param1: number): string;
+    get forceFurniSelection(): boolean;
+    mergedSelections(): any[];
+    mergedSelectionTitle(param1: number): string;
+    setMergedType(param1: number, param2: number): void;
+    getMergedType(param1: number): number;
+    mergedSourceOptions(param1: number): any[];
+    hasCustomTypePicker(param1: number): boolean;
+    isInputSourceDisabled(param1: number, param2: number): boolean;
+    getCustomSourcesForMergedType(param1: number): any[];
+    get forceHidePickFurniInstructions(): boolean;
+    advancedAlwaysVisible(): boolean;
+    get usingCustomAdvancedSettings(): boolean;
+    onGuildMemberships(param1: GuildMembershipsMessageEvent): void;
+    get requireConfirmation(): any;
+    get roomEvents(): HabboUserDefinedRoomEvents;
+    get widthModifier(): number;
+    get allowScrolling(): boolean;
+}

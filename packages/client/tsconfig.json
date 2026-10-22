@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    /* the generated client's own modules; the platform comes from @habbo-pixi/runtime */
+    "paths": { "@/*": ["./src/*"] }
+  },
+  /* plus the runtime's global declarations (they apply only where they are compiled) */
+  "include": ["src", "../runtime/src/**/*.d.ts"]
+}

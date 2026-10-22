@@ -1,0 +1,55 @@
+$schema: '../../.moon/cache/schemas/project.json'
+
+language: 'typescript'
+type: 'application'
+
+dependsOn:
+  - 'runtime'
+
+tasks:
+  # the editor, on the client's asset pack (edits go to packages/asset-overlay) or any .hpa file
+  dev:
+    command: 'vite'
+    preset: 'server'
+
+  # the page, and its Node side (the Vite config, the desktop app, the pack API)
+  typecheck:
+    script: 'tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json'
+    inputs:
+      - 'src/**/*'
+      - 'vite.config.ts'
+      - 'project.ts'
+      - 'electron/**/*'
+      - 'tsconfig*.json'
+      - '/packages/asset-overlay/assetOverlay.ts'
+      - '/tsconfig.base.json'
+      - '/packages/runtime/src/embed/**/*'
+
+  # a static build: opens and saves .hpa files only (the client's pack needs the dev server)
+  build:
+    command: 'vite build'
+    deps:
+      - '~:typecheck'
+    inputs:
+      - 'src/**/*'
+      - 'index.html'
+      - 'vite.config.ts'
+      - '/packages/runtime/src/embed/**/*'
+    outputs:
+      - 'dist'
+
+  # the desktop app (Electron) on the build
+  app:
+    command: 'electron .'
+    deps:
+      - '~:build'
+    preset: 'server'
+
+  # the desktop app on the dev server (hot reload)
+  app-dev:
+    command: 'electron .'
+    deps:
+      - '~:dev'
+    env:
+      EDITOR_DEV_SERVER: 'http://127.0.0.1:5180'
+    preset: 'server'

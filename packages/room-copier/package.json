@@ -1,0 +1,13 @@
+{
+  "name": "@habbo-pixi/room-copier",
+  "description": "Copies the room the client is in on Habbo (:copy, :copy wired) for the Habbo server's room import, through the game connection's packet taps; the relay saves the copies. A client loads it with ?copier=<relay port>.",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@habbo-pixi/runtime": "*"
+  }
+}

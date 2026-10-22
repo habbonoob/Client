@@ -1,0 +1,191 @@
+import { asGuarded, asInstanceOf } from '@habbo-pixi/runtime/lang/cast';
+import { registerClassName } from '@habbo-pixi/runtime/utils/getQualifiedClassName';
+import type { WindowMouseEvent } from '@/com/sulake/core/window/events/WindowMouseEvent';
+import type { IWindow } from '@/com/sulake/core/window/IWindow';
+import type { IWindowContainer } from '@/com/sulake/core/window/IWindowContainer';
+import type { MeMenuController } from '@/com/sulake/habbo/toolbar/memenu/MeMenuController';
+import type { MeMenuSettingsMenuView } from '@/com/sulake/habbo/toolbar/memenu/MeMenuSettingsMenuView';
+import type { ToolbarView } from '@/com/sulake/habbo/toolbar/ToolbarView';
+import type { BitmapData } from '@habbo-pixi/runtime/display/BitmapData';
+import { XML } from '@habbo-pixi/runtime/xml/XML';
+import { XmlAsset } from '@/com/sulake/core/assets/XmlAsset';
+import { isIWindow } from '@/com/sulake/core/window/IWindow';
+import { isIWindowContainer } from '@/com/sulake/core/window/IWindowContainer';
+import { Logger } from '@/com/sulake/habbo/Logger';
+import { MeMenuSoundSettingsItem } from '@/com/sulake/habbo/toolbar/memenu/soundsettings/MeMenuSoundSettingsItem';
+
+export class MeMenuSoundSettingsView {
+    static { registerClassName(this, 'com.sulake.habbo.toolbar.memenu.soundsettings::MeMenuSoundSettingsView'); }
+
+    declare private _widget: MeMenuSettingsMenuView;
+
+    declare private _window: IWindowContainer;
+
+    declare private _SafeStr_3617: MeMenuSoundSettingsItem;
+
+    declare private _SafeStr_3588: MeMenuSoundSettingsItem;
+
+    declare private _SafeStr_3573: MeMenuSoundSettingsItem;
+
+    declare private _soundsOffIconColor: BitmapData;
+
+    declare private _soundsOffIconWhite: BitmapData;
+
+    declare private _soundsOnIconColor: BitmapData;
+
+    declare private _soundsOnIconWhite: BitmapData;
+
+    private _genericVolume: number = 1;
+    private _furniVolume: number = 1;
+    private _traxVolume: number = 1;
+
+    declare private _toolbarView: ToolbarView;
+
+    constructor() {
+    }
+
+    public init(param1: MeMenuSettingsMenuView, param2: ToolbarView): void {
+        this._toolbarView = param2;
+        this._widget = param1;
+        this.createWindow();
+    }
+
+    public dispose(): void {
+        this.saveVolume(this._genericVolume, this._furniVolume, this._traxVolume);
+        this._widget = null;
+        if (this._window != null) {
+            this._window.dispose();
+        }
+        this._window = null;
+        if (this._SafeStr_3617 != null) {
+            this._SafeStr_3617.dispose();
+        }
+        this._SafeStr_3617 = null;
+        if (this._SafeStr_3588 != null) {
+            this._SafeStr_3588.dispose();
+        }
+        this._SafeStr_3588 = null;
+        if (this._SafeStr_3573 != null) {
+            this._SafeStr_3573.dispose();
+        }
+        this._SafeStr_3573 = null;
+        if (this._soundsOffIconColor) {
+            this._soundsOffIconColor.dispose();
+            this._soundsOffIconColor = null;
+        }
+        if (this._soundsOffIconWhite) {
+            this._soundsOffIconWhite.dispose();
+            this._soundsOffIconWhite = null;
+        }
+        if (this._soundsOnIconColor) {
+            this._soundsOnIconColor.dispose();
+            this._soundsOnIconColor = null;
+        }
+        if (this._soundsOnIconWhite) {
+            this._soundsOnIconWhite.dispose();
+            this._soundsOnIconWhite = null;
+        }
+    }
+
+    public get window(): IWindowContainer {
+        return this._window;
+    }
+
+    public updateSettings(): void {
+        this._genericVolume = this._widget.widget.toolbar.soundManager.genericVolume;
+        this._furniVolume = this._widget.widget.toolbar.soundManager.furniVolume;
+        this._traxVolume = this._widget.widget.toolbar.soundManager.traxVolume;
+        if (this._SafeStr_3617 != null) {
+            this._SafeStr_3617.setValue(this._genericVolume);
+        }
+        if (this._SafeStr_3588 != null) {
+            this._SafeStr_3588.setValue(this._furniVolume);
+        }
+        if (this._SafeStr_3573 != null) {
+            this._SafeStr_3573.setValue(this._traxVolume);
+        }
+    }
+
+    private createWindow(): void {
+        let _loc1_: IWindow = null;
+        let _loc3_: number = 0;
+        let _loc2_: XmlAsset = asInstanceOf(this._widget.widget.toolbar.assets.getAssetByName("me_menu_sound_settings_xml"), XmlAsset);
+        this._window = asGuarded(this._widget.widget.toolbar.windowManager.buildFromXML(asInstanceOf(_loc2_.content, XML)), isIWindowContainer);
+        this._window.x = this._toolbarView.window.width + 10;
+        this._window.y = this._toolbarView.window.bottom - this._window.height;
+        _loc3_ = 0;
+        while (_loc3_ < this._window.numChildren) {
+            _loc1_ = this._window.getChildAt(_loc3_);
+            _loc1_.addEventListener("WME_CLICK", this.onButtonClicked);
+            _loc3_++;
+        }
+        this._SafeStr_3617 = new MeMenuSoundSettingsItem(this, 0, this.uiVolumeContainer);
+        this._SafeStr_3588 = new MeMenuSoundSettingsItem(this, 1, this.furniVolumeContainer);
+        this._SafeStr_3573 = new MeMenuSoundSettingsItem(this, 2, this.traxVolumeContainer);
+        this.updateSettings();
+    }
+
+    private onButtonClicked = (param1: WindowMouseEvent): void => {
+        let _loc2_: IWindow = asGuarded(param1.target, isIWindow);
+        let _loc3_: string = _loc2_.name;
+        Logger.log(_loc3_);
+        let _loc4_: string = _loc3_;
+        if ("back_btn" !== _loc4_) {
+            Logger.log("Me Menu Settings View: unknown button: " + _loc3_);
+        } else {
+            this._widget.window.visible = true;
+            this.dispose();
+        }
+    };
+
+    public saveVolume(param1: number, param2: number, param3: number, param4: boolean = true): void {
+        let _loc6_: number = param2 != -1 ? param2 : this._furniVolume;
+        let _loc5_: number = param1 != -1 ? param1 : this._genericVolume;
+        let _loc7_: number = param3 != -1 ? param3 : this._traxVolume;
+        if (param4) {
+            if (this._widget == null) {
+                return;
+            }
+            this._widget.widget.toolbar.soundManager.furniVolume = _loc6_;
+            this._widget.widget.toolbar.soundManager.genericVolume = _loc5_;
+            this._widget.widget.toolbar.soundManager.traxVolume = _loc7_;
+        } else {
+            this._widget.widget.toolbar.soundManager.previewVolume(_loc5_, _loc6_, _loc7_);
+        }
+    }
+
+    public updateUnseenItemCount(param1: string, param2: number): void {
+    }
+
+    public get uiVolumeContainer(): IWindowContainer {
+        return asGuarded(this._window.findChildByName("ui_volume_container"), isIWindowContainer);
+    }
+
+    public get furniVolumeContainer(): IWindowContainer {
+        return asGuarded(this._window.findChildByName("furni_volume_container"), isIWindowContainer);
+    }
+
+    public get traxVolumeContainer(): IWindowContainer {
+        return asGuarded(this._window.findChildByName("trax_volume_container"), isIWindowContainer);
+    }
+
+    public get widget(): MeMenuController {
+        return this._widget.widget;
+    }
+
+    public get soundsOffIconColor(): BitmapData {
+        return this._soundsOffIconColor;
+    }
+
+    public get soundsOffIconWhite(): BitmapData {
+        return this._soundsOffIconWhite;
+    }
+
+    public get soundsOnIconColor(): BitmapData {
+        return this._soundsOnIconColor;
+    }
+
+    public get soundsOnIconWhite(): BitmapData {
+        return this._soundsOnIconWhite;
+    }
+}

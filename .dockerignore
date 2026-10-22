@@ -1,0 +1,10 @@
+**/node_modules
+**/dist
+**/dist-test
+.git
+.idea
+.moon/cache
+packages/editor
+packages/ui-editor
+packages/client
+packages/client-WIN63-*

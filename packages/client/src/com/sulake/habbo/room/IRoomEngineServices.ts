@@ -1,0 +1,80 @@
+import { registerClassName } from '@habbo-pixi/runtime/utils/getQualifiedClassName';
+import type { IConnection } from '@/com/sulake/core/communication/connection/IConnection';
+import type { ICoreConfiguration } from '@/com/sulake/core/runtime/ICoreConfiguration';
+import type { IHabboCatalog } from '@/com/sulake/habbo/catalog/IHabboCatalog';
+import type { IHabboGameManager } from '@/com/sulake/habbo/game/IHabboGameManager';
+import type { IRoomAreaSelectionManager } from '@/com/sulake/habbo/room/IRoomAreaSelectionManager';
+import type { IRoomObjectCreator } from '@/com/sulake/habbo/room/IRoomObjectCreator';
+import type { ISelectedRoomObjectData } from '@/com/sulake/habbo/room/ISelectedRoomObjectData';
+import type { IStuffData } from '@/com/sulake/habbo/room/IStuffData';
+import type { FurniStackingHeightMap } from '@/com/sulake/habbo/room/utils/FurniStackingHeightMap';
+import type { LegacyWallGeometry } from '@/com/sulake/habbo/room/utils/LegacyWallGeometry';
+import type { SelectedRoomObjectData } from '@/com/sulake/habbo/room/utils/SelectedRoomObjectData';
+import type { TileObjectMap } from '@/com/sulake/habbo/room/utils/TileObjectMap';
+import type { IHabboUserDefinedRoomEvents } from '@/com/sulake/habbo/roomevents/IHabboUserDefinedRoomEvents';
+import type { IRoomSessionManager } from '@/com/sulake/habbo/session/IRoomSessionManager';
+import type { ISessionDataManager } from '@/com/sulake/habbo/session/ISessionDataManager';
+import type { IHabboToolbar } from '@/com/sulake/habbo/toolbar/IHabboToolbar';
+import type { IHabboWindowManager } from '@/com/sulake/habbo/window/IHabboWindowManager';
+import type { IRoomInstance } from '@/com/sulake/room/IRoomInstance';
+import type { IRoomObject } from '@/com/sulake/room/object/IRoomObject';
+import type { IRoomObjectController } from '@/com/sulake/room/object/IRoomObjectController';
+import type { IRoomRenderingCanvas } from '@/com/sulake/room/renderer/IRoomRenderingCanvas';
+import type { IEventDispatcher } from '@habbo-pixi/runtime/events/IEventDispatcher';
+
+export interface IRoomEngineServices extends IRoomObjectCreator {
+    get connection(): IConnection;
+    get events(): IEventDispatcher;
+    get gameEngine(): IHabboGameManager;
+    get activeRoomHasHanditemControlBlocked(): boolean;
+    get activeRoomHasChooserDisabled(): boolean;
+    get activeRoomHasFreeFurniMovementsMode(): boolean;
+    get isDecorateMode(): boolean;
+    get isGameMode(): boolean;
+    get playerUnderCursor(): number;
+    get configuration(): ICoreConfiguration;
+    get roomSessionManager(): IRoomSessionManager;
+    get sessionDataManager(): ISessionDataManager;
+    get toolbar(): IHabboToolbar;
+    get catalog(): IHabboCatalog;
+    get roomEvents(): IHabboUserDefinedRoomEvents;
+    get windowManager(): IHabboWindowManager;
+    get areaSelectionManager(): IRoomAreaSelectionManager;
+    getRoom(param1: number): IRoomInstance;
+    getRoomObjectCategory(param1: string): number;
+    getRoomObject(param1: number, param2: number, param3: number): IRoomObject;
+    getRoomObjectWithIndex(param1: number, param2: number, param3: number): IRoomObject;
+    getRoomObjectCount(param1: number, param2: number): number;
+    updateObjectRoomWindow(param1: number, param2: number, param3?: boolean): void;
+    setObjectMoverIconSprite(param1: number, param2: number, param3: boolean, param4?: string, param5?: IStuffData, param6?: number, param7?: number, param8?: string): void;
+    setObjectMoverIconSpriteVisible(param1: boolean): void;
+    removeObjectMoverIconSprite(): void;
+    getSelectedObjectData(param1: number): ISelectedRoomObjectData;
+    setSelectedObjectData(param1: number, param2: SelectedRoomObjectData): void;
+    setPlacedObjectData(param1: number, param2: SelectedRoomObjectData): void;
+    getPlacedObjectData(param1: number): ISelectedRoomObjectData;
+    getLegacyGeometry(param1: number): LegacyWallGeometry;
+    getFurniStackingHeightMap(param1: number): FurniStackingHeightMap;
+    getTileObjectMap(param1: number): TileObjectMap;
+    getSelectionArrow(param1: number): IRoomObjectController;
+    getTileCursor(param1: number): IRoomObjectController;
+    getIsPlayingGame(param1: number): boolean;
+    getActiveRoomIsPlayingGame(): boolean;
+    requestRoomAdImage(param1: number, param2: number, param3: number, param4: string, param5: string): void;
+    requestMouseCursor(param1: string, param2: number, param3: string): void;
+    addFloorHole(param1: number, param2: number): void;
+    removeFloorHole(param1: number, param2: number): void;
+    getActiveRoomActiveCanvas(): IRoomRenderingCanvas;
+    requestBadgeImageAsset(param1: number, param2: number, param3: number, param4: string, param5?: boolean): void;
+    requestFurniIconAsset(param1: number, param2: number, param3: number, param4: boolean, param5: number, param6: string): void;
+    isAreaSelectionMode(): boolean;
+    isMoveBlocked(): boolean;
+    isWhereYouClickWhereYouGo(): boolean;
+}
+
+export const IRoomEngineServices = Symbol('com.sulake.habbo.room::IRoomEngineServices');
+registerClassName(IRoomEngineServices, 'com.sulake.habbo.room::IRoomEngineServices');
+
+export function isIRoomEngineServices(value: unknown): value is IRoomEngineServices {
+    return (value as { [IRoomEngineServices]?: true } | null | undefined)?.[IRoomEngineServices] === true;
+}

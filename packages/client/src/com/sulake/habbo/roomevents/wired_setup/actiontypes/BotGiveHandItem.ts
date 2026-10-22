@@ -1,0 +1,126 @@
+import { registerClassName } from '@habbo-pixi/runtime/utils/getQualifiedClassName';
+import type { Triggerable } from '@/com/sulake/habbo/communication/messages/incoming/userdefinedroomevents/Triggerable';
+import type { PresetManager } from '@/com/sulake/habbo/roomevents/wired_setup/uibuilder/PresetManager';
+import type { ButtonPreset } from '@/com/sulake/habbo/roomevents/wired_setup/uibuilder/presets/ButtonPreset';
+import type { CheckboxGroupPreset } from '@/com/sulake/habbo/roomevents/wired_setup/uibuilder/presets/CheckboxGroupPreset';
+import type { DropdownPreset } from '@/com/sulake/habbo/roomevents/wired_setup/uibuilder/presets/DropdownPreset';
+import type { SectionPreset } from '@/com/sulake/habbo/roomevents/wired_setup/uibuilder/presets/SectionPreset';
+import type { SimpleListViewPreset } from '@/com/sulake/habbo/roomevents/wired_setup/uibuilder/presets/SimpleListViewPreset';
+import type { TextInputPreset } from '@/com/sulake/habbo/roomevents/wired_setup/uibuilder/presets/TextInputPreset';
+import type { WiredStyle } from '@/com/sulake/habbo/roomevents/wired_setup/uibuilder/styles/WiredStyle';
+import type { WiredUIBuilder } from '@/com/sulake/habbo/roomevents/wired_setup/uibuilder/WiredUIBuilder';
+import { AbstractBotAction } from '@/com/sulake/habbo/roomevents/wired_setup/actiontypes/AbstractBotAction';
+import { ActionTypeCodes } from '@/com/sulake/habbo/roomevents/wired_setup/actiontypes/ActionTypeCodes';
+import { ExpandableDropdownOption } from '@/com/sulake/habbo/roomevents/wired_setup/common/advanced_dropdown/ExpandableDropdownOption';
+import { DefaultElement } from '@/com/sulake/habbo/roomevents/wired_setup/DefaultElement';
+import { CheckboxOptionParam } from '@/com/sulake/habbo/roomevents/wired_setup/uibuilder/params/CheckboxOptionParam';
+import { DropdownParam } from '@/com/sulake/habbo/roomevents/wired_setup/uibuilder/params/DropdownParam';
+import { TextInputParam } from '@/com/sulake/habbo/roomevents/wired_setup/uibuilder/params/TextInputParam';
+
+export class BotGiveHandItem extends AbstractBotAction {
+    static { registerClassName(this, 'com.sulake.habbo.roomevents.wired_setup.actiontypes::BotGiveHandItem'); }
+
+    private static readonly DEFAULT_CODES: any[] = [0, 2, 5, 7, 8, 9, 10, 27];
+
+    constructor() {
+        super();
+    }
+
+    declare private _SafeStr_5246: CheckboxGroupPreset;
+
+    declare private _botName: TextInputPreset;
+
+    declare private _handItemDropdown: DropdownPreset;
+
+    declare private _SafeStr_6225: ButtonPreset;
+
+    declare private _options: ExpandableDropdownOption[];
+
+    public override get code(): number {
+        return ActionTypeCodes.BOT_GIVE_HAND_ITEM;
+    }
+
+    public override get inputMode(): number {
+        return DefaultElement.INPUTS_TYPE_UI_BUILDER;
+    }
+
+    public override readStringParamFromForm(): string {
+        return this._SafeStr_5246._SafeStr_2119(0).selected ? this._botName.text : "";
+    }
+
+    public override readIntParamsFromForm(): any[] {
+        let _loc1_: number = this._handItemDropdown.selectedId;
+        return [_loc1_ == -1 ? 0 : _loc1_];
+    }
+
+    public override onEditStart(param1: Triggerable): void {
+        let _loc2_: any = param1.stringParam != "";
+        this._botName.text = param1.stringParam;
+        this._SafeStr_5246._SafeStr_2119(0).selected = _loc2_;
+        this._botName.window.visible = _loc2_;
+        this.setSelectedHandItemByCode(param1.intParams[0] | 0);
+    }
+
+    public override buildInputs(param1: PresetManager, param2: WiredStyle, param3: WiredUIBuilder): void {
+        this._SafeStr_5246 = param1.createCheckboxGroup([new CheckboxOptionParam(this.l("bot.usage"))], this.onBotUsageChange);
+        this._botName = param1.createTextInput(new TextInputParam("", 32, null, -1, null, true, this.loc("wiredfurni.tooltip.bot.name")));
+        let _loc4_: SimpleListViewPreset = param1.createSimpleListView(true, [this._SafeStr_5246, this._botName]);
+        let _loc5_: SectionPreset = param1.createSection(this.l("bot.name"), _loc4_);
+        this._options = this.createOptions(BotGiveHandItem.DEFAULT_CODES);
+        this._handItemDropdown = param1.createDropdown(new DropdownParam(this.loc("wiredfurni.tooltip.bot.handitem"), this._options));
+        this._SafeStr_6225 = param1.createButton(this.l("capture.handitem"), this.captureHanditem);
+        let _loc6_: SectionPreset = param1.createSection(this.l("handitem"), param1.createSimpleListView(true, [this._handItemDropdown, this._SafeStr_6225]));
+        param3.addElements(_loc5_, _loc6_);
+    }
+
+    private setSelectedHandItemByCode(param1: number): void {
+        this.ensureOptionExists(param1);
+        this._handItemDropdown.selectedId = param1;
+    }
+
+    private onBotUsageChange = (param1: number, param2: boolean): void => {
+        if (param1 != 0) {
+            return;
+        }
+        this._botName.window.visible = param2;
+    };
+
+    private createOptions(param1: any[]): ExpandableDropdownOption[] {
+        let _loc3_: ExpandableDropdownOption[] = [];
+        for (const _loc2_ of param1 ?? []) {
+            _loc3_.push(new ExpandableDropdownOption(_loc2_ | 0, "${handitem" + _loc2_ + "}"));
+        }
+        return _loc3_;
+    }
+
+    private ensureOptionExists(param1: number): void {
+        let _loc4_: number = 0;
+        if (param1 < 0) {
+            return;
+        }
+        let _loc3_: boolean = false;
+        for (const _loc2_ of this._options ?? []) {
+            if (_loc2_.id == param1) {
+                _loc3_ = true;
+                break;
+            }
+        }
+        if (!_loc3_) {
+            this._options.push(new ExpandableDropdownOption(param1, "${handitem" + param1 + "}"));
+        }
+        let _loc5_: any = -1;
+        _loc4_ = 0;
+        while (_loc4_ < this._options.length) {
+            if (this._options[_loc4_].id == param1) {
+                _loc5_ = _loc4_;
+            }
+            _loc4_++;
+        }
+        this._handItemDropdown.reinit(this._options, _loc5_ | 0);
+    }
+
+    private captureHanditem = (): void => {
+        let _loc1_: number = this.roomEvents.roomEngine.getRoomObject(this.roomEvents.roomSession.roomId, this.roomEvents.roomSession.ownUserRoomId, 100).getModel().getNumber("figure_carry_object") | 0;
+        this.setSelectedHandItemByCode(_loc1_);
+    };
+}

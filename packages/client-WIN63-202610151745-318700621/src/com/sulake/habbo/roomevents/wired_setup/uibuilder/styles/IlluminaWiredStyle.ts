@@ -1,0 +1,175 @@
+import { asGuarded, castGuarded } from '@habbo-pixi/runtime/lang/cast';
+import { registerClassName } from '@habbo-pixi/runtime/utils/getQualifiedClassName';
+import type { IWindowContainer } from '@/com/sulake/core/window/IWindowContainer';
+import type { HabboUserDefinedRoomEvents } from '@/com/sulake/habbo/roomevents/HabboUserDefinedRoomEvents';
+import { isIWindowContainer } from '@/com/sulake/core/window/IWindowContainer';
+import { WiredStyle } from '@/com/sulake/habbo/roomevents/wired_setup/uibuilder/styles/WiredStyle';
+
+export class IlluminaWiredStyle extends WiredStyle {
+    static { registerClassName(this, 'com.sulake.habbo.roomevents.wired_setup.uibuilder.styles::IlluminaWiredStyle'); }
+
+    public static readonly NAME: string = "illumina";
+
+    declare private _styleTemplate: IWindowContainer;
+
+    constructor(param1: HabboUserDefinedRoomEvents) {
+        super(param1);
+        this._styleTemplate = castGuarded(param1.getXmlWindow("wired_style_illumina"), isIWindowContainer, "com.sulake.core.window.IWindowContainer");
+    }
+
+    protected override get styleTemplate(): IWindowContainer {
+        return this._styleTemplate;
+    }
+
+    public override get radioButtonSpacing(): number {
+        return 3;
+    }
+
+    public override get checkboxSpacing(): number {
+        return 3;
+    }
+
+    public override get checkboxYOffset(): number {
+        return 2;
+    }
+
+    public override get namedInputOffset(): number {
+        return 2;
+    }
+
+    public override get namedDropdownOffset(): number {
+        return 2;
+    }
+
+    public override get radioButtonYOffset(): number {
+        return 0;
+    }
+
+    public override get namedTextYOffset(): number {
+        return 0;
+    }
+
+    public override get genericHorizontalSpacing(): number {
+        return 5;
+    }
+
+    public override get genericVerticalSpacing(): number {
+        return 5;
+    }
+
+    public override get sectionSpacing(): number {
+        return 5;
+    }
+
+    public override get sectionLeftRightMargin(): number {
+        return 5;
+    }
+
+    public override get headerMargin(): number {
+        return 5;
+    }
+
+    public override get headerBottomMarginWithLink(): number {
+        return 1;
+    }
+
+    public override get headerNameFontSize(): number {
+        return 12;
+    }
+
+    public override get minimumOptionHeight(): number {
+        return 20;
+    }
+
+    public override get minimumOptionSpacing(): number {
+        return 4;
+    }
+
+    public override get optionExtraUnderSpacing(): number {
+        return 3;
+    }
+
+    public override get optionExtraUnderLeftMargin(): number {
+        return 25;
+    }
+
+    public override get LRContainerMargin(): number {
+        return 9;
+    }
+
+    public override get LRContainerSpacing(): number {
+        return 6;
+    }
+
+    public override get LRContainerTopBottomPadding(): number {
+        return 4;
+    }
+
+    public override get inputSourceListMinHeight(): number {
+        return 26;
+    }
+
+    public override get buttonRowSpacing(): number {
+        return 12;
+    }
+
+    public override get menuRightOffset(): number {
+        return 12;
+    }
+
+    public override get verticalSplitterColor(): number {
+        return 4289374890;
+    }
+
+    public override createMessageEditorToolbar(): IWindowContainer {
+        return asGuarded(this.recreateElement("message_editor_toolbar"), isIWindowContainer);
+    }
+
+    public override createMessageEditorPalette(): IWindowContainer {
+        return asGuarded(this.recreateElement("message_editor_palette"), isIWindowContainer);
+    }
+
+    public override createMessageEditorPreview(): IWindowContainer {
+        return asGuarded(this.recreateElement("message_editor_preview"), isIWindowContainer);
+    }
+
+    public override get frameColor(): number {
+        return 14869218;
+    }
+
+    public override get backgroundColor(): number {
+        return this.frameColor;
+    }
+
+    public override get advancedBackgroundColor(): number {
+        return 13421772;
+    }
+
+    public override get invalidInputBackgroundColor(): number {
+        return 16762569;
+    }
+
+    public override get surroundingBorderStyleId(): number {
+        return 102;
+    }
+
+    public override get yellowTextColor(): number {
+        return 7501076;
+    }
+
+    public override get softTextColor(): number {
+        return 4473924;
+    }
+
+    public override get redTextColor(): number {
+        return 15544371;
+    }
+
+    public override get warningTextColor(): number {
+        return 11820806;
+    }
+
+    public override get name(): string {
+        return "illumina";
+    }
+}

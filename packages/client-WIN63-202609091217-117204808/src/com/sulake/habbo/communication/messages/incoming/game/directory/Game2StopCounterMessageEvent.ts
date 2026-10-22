@@ -1,0 +1,17 @@
+import { registerClassName } from '@habbo-pixi/runtime/utils/getQualifiedClassName';
+import type { IMessageEvent } from '@/com/sulake/core/communication/messages/IMessageEvent';
+import { MessageEvent } from '@/com/sulake/core/communication/messages/MessageEvent';
+import { Game2InArenaQueueMessageParser } from '@/com/sulake/habbo/communication/messages/parser/game/directory/Game2InArenaQueueMessageParser';
+import { Game2StopCounterMessageParser } from '@/com/sulake/habbo/communication/messages/parser/game/directory/Game2StopCounterMessageParser';
+
+export class Game2StopCounterMessageEvent extends MessageEvent implements IMessageEvent {
+    static { registerClassName(this, 'com.sulake.habbo.communication.messages.incoming.game.directory::Game2StopCounterMessageEvent'); }
+
+    constructor(param1: (...args: any[]) => any) {
+        super(param1, Game2StopCounterMessageParser);
+    }
+
+    public getParser(): Game2InArenaQueueMessageParser {
+        return this._parser instanceof Game2InArenaQueueMessageParser ? this._parser : null;
+    }
+}

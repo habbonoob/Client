@@ -1,0 +1,8 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    /* Node: the Vite config and the desktop app's main process (they serve the client's pack) */
+    "types": ["node"]
+  },
+  "include": ["vite.config.ts", "project.ts", "electron/*.ts"]
+}

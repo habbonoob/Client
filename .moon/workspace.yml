@@ -1,0 +1,9 @@
+$schema: './cache/schemas/workspace.json'
+
+# every package under packages/ is a moon project, named after its folder (runtime, client, editor)
+projects:
+  - 'packages/*'
+
+vcs:
+  manager: 'git'
+  defaultBranch: 'main'

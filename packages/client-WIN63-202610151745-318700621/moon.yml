@@ -1,0 +1,50 @@
+$schema: '../../.moon/cache/schemas/project.json'
+
+language: 'typescript'
+type: 'application'
+
+dependsOn:
+  - 'runtime'
+
+tasks:
+  typecheck:
+    command: 'tsc --noEmit -p .'
+    inputs:
+      - 'src/**/*'
+      - 'tsconfig.json'
+      - '/tsconfig.base.json'
+      - '/packages/runtime/src/**/*'
+
+  build:
+    command: 'vite build'
+    deps:
+      - '~:typecheck'
+    inputs:
+      - 'src/**/*'
+      - 'public/**/*'
+      - 'index.html'
+      - 'vite.config.ts'
+      - '/packages/runtime/src/**/*'
+    outputs:
+      - 'dist'
+
+  dev:
+    command: 'vite'
+    preset: 'server'
+
+  # build with source maps and serve it, for debugging the TypeScript (WebStorm: "Debug client")
+  debug:
+    script: 'vite build --sourcemap && vite preview'
+    preset: 'server'
+
+  # serve the last build (dist/) as it is
+  preview:
+    command: 'vite preview'
+    preset: 'server'
+
+  # build, then serve it
+  serve:
+    command: 'vite preview'
+    deps:
+      - '~:build'
+    preset: 'server'

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Habbo UI editor</title>
+  <style>
+    :root { color-scheme: dark; --panel: #1d2026; --field: #111317; --line: #2e333b; --text: #d7dbe0; --dim: #8a929c; --accent: #4f8cff; --warn: #f2b84b; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; background: #3a3f47; color: var(--text); font: 13px system-ui, sans-serif; overflow: hidden; }
+    canvas { position: fixed; inset: 0; }
+    button { font: inherit; color: inherit; }
+    input, textarea { font: inherit; color: var(--text); background: var(--field); border: 1px solid var(--line); border-radius: 4px; }
+    input { padding: 3px 6px; min-width: 0; }
+    .panel { position: fixed; top: 0; bottom: 0; background: var(--panel); border-color: var(--line); border-style: solid; display: flex; flex-direction: column; z-index: 2; }
+    #layouts { left: 0; width: 300px; border-width: 0 1px 0 0; }
+    #inspector { right: 0; width: 420px; border-width: 0 0 0 1px; }
+    #surface { position: fixed; top: 0; bottom: 0; left: 300px; right: 420px; z-index: 1; cursor: crosshair; }
+    .panel > header { padding: 10px 12px; border-bottom: 1px solid var(--line); font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .panel > header .grow { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #title.dirty::after { content: ' ●'; color: var(--warn); }
+    .tool { padding: 3px 10px; background: #2a2f37; border: 1px solid var(--line); border-radius: 4px; cursor: pointer; font-weight: 500; }
+    .tool.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .tool:disabled { opacity: .4; cursor: default; }
+    #search, #new-name { margin: 8px 12px 0; padding: 6px 8px; width: calc(100% - 24px); }
+    #search { margin-bottom: 8px; }
+    #list { flex: 1; overflow-y: auto; padding-bottom: 12px; }
+    #list h3 { margin: 10px 12px 2px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--dim); }
+    #list button { display: block; width: 100%; text-align: left; padding: 3px 12px 3px 20px; background: none; border: 0; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #list button:hover { background: #262a31; }
+    #list button.piece { color: #b8c0ca; }
+    #list .fold { display: inline-block; width: 14px; margin-left: -14px; color: var(--dim); }
+    #list .fold:hover { color: var(--text); }
+    #list .count { margin-left: 6px; padding: 0 5px; border-radius: 8px; background: #2a2f37; color: var(--dim); font-size: 11px; }
+    #list button.edited::after { content: ' ●'; color: var(--warn); }
+    #list button.selected { background: var(--accent); color: #fff; }
+    #status { padding: 8px 12px; border-bottom: 1px solid var(--line); color: var(--dim); min-height: 34px; max-height: 30%; overflow: auto; }
+    #status.error { color: #ff8a8a; white-space: pre-wrap; }
+    #tabs { display: flex; border-bottom: 1px solid var(--line); }
+    #tabs button { flex: 1; padding: 7px; background: none; border: 0; border-bottom: 2px solid transparent; cursor: pointer; color: var(--dim); }
+    #tabs button.active { color: var(--text); border-bottom-color: var(--accent); }
+    .tab { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+    .tab[hidden] { display: none; }
+    #tree { max-height: 40%; overflow-y: auto; border-bottom: 1px solid var(--line); padding: 4px 0; }
+    #tree .node { display: block; width: 100%; text-align: left; padding: 2px 8px; background: none; border: 0; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #tree .node:hover { background: #262a31; }
+    #tree .node.selected { background: #2b3b57; }
+    #tree .type { color: #8fb6ff; font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
+    #tree .name { color: var(--dim); margin-left: 8px; }
+    #properties { flex: 1; overflow-y: auto; padding: 8px 12px 16px; }
+    #properties h3 { margin: 4px 0 8px; font: 600 13px ui-monospace, Consolas, monospace; color: #8fb6ff; }
+    #properties h4 { margin: 14px 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--dim); }
+    #properties .note { color: var(--dim); }
+    .row { display: flex; gap: 6px; align-items: center; margin-bottom: 4px; }
+    .row input { flex: 1; }
+    .row input.narrow { flex: 0 0 70px; }
+    .row .label { flex: 0 0 110px; color: var(--dim); overflow: hidden; text-overflow: ellipsis; font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
+    .row .remove { flex: 0 0 24px; background: none; border: 0; color: var(--dim); cursor: pointer; font-size: 15px; }
+    .row .remove:hover { color: #ff8a8a; }
+    .row.adder input { opacity: .8; }
+    .row .add { flex: 0 0 auto; padding: 3px 8px; background: #2a2f37; border: 1px solid var(--line); border-radius: 4px; cursor: pointer; color: var(--dim); }
+    #xml { flex: 1; margin: 8px 12px 0; padding: 8px; resize: none; font: 12px ui-monospace, Consolas, monospace; color: #b9c4d0; white-space: pre; }
+    .xml-bar { padding: 8px 12px; display: flex; justify-content: flex-end; }
+    .box { position: fixed; display: none; pointer-events: none; z-index: 1; }
+    .box.hover { outline: 1px dashed rgba(143, 182, 255, .9); }
+    .box.selection { outline: 2px solid var(--accent); box-shadow: 0 0 0 9999px rgba(0, 0, 0, .12); }
+    .box .handle { position: absolute; right: -5px; bottom: -5px; width: 9px; height: 9px; background: var(--accent); border: 1px solid #fff; }
+    .row.actions { margin: 0 0 10px; }
+    .row.actions select { flex: 1; min-width: 0; padding: 3px 4px; background: var(--field); color: var(--text); border: 1px solid var(--line); border-radius: 4px; font: inherit; }
+    .hint { margin: -2px 0 6px 116px; color: var(--dim); font: 11px ui-monospace, Consolas, monospace; overflow-wrap: anywhere; }
+    .row .add.danger:hover { color: #ff8a8a; border-color: #6b3434; }
+    .box-label { position: absolute; left: 0; top: -20px; padding: 1px 5px; background: var(--accent); color: #fff; font: 11px ui-monospace, Consolas, monospace; border-radius: 3px; white-space: nowrap; }
+  </style>
+</head>
+<body>
+  <div id="surface"></div>
+  <aside class="panel" id="layouts">
+    <header><span class="grow">Layouts</span><button class="tool" id="new" title="Start a layout of your own">+ New</button></header>
+    <form id="new-form" hidden><input id="new-name" placeholder="New layout's name (e.g. my_window)" autocomplete="off" spellcheck="false"></form>
+    <input id="search" type="search" placeholder="Filter layouts" autocomplete="off">
+    <nav id="list"><h3>Starting the window system…</h3></nav>
+  </aside>
+  <aside class="panel" id="inspector">
+    <header>
+      <span class="grow" id="title">No layout open</span>
+      <button class="tool" id="undo" title="Undo (Ctrl+Z)">&#8630;</button>
+      <button class="tool" id="redo" title="Redo (Ctrl+Y)">&#8631;</button>
+      <button class="tool" id="revert" title="Undo every saved change to this layout">Revert</button>
+      <button class="tool primary" id="save" title="Save (Ctrl+S)">Save</button>
+    </header>
+    <div id="status"></div>
+    <nav id="tabs">
+      <button data-tab="edit">Elements</button>
+      <button data-tab="xml">XML</button>
+    </nav>
+    <div class="tab" id="tab-edit">
+      <div id="tree"></div>
+      <div id="properties"></div>
+    </div>
+    <div class="tab" id="tab-xml">
+      <textarea id="xml" spellcheck="false"></textarea>
+      <div class="xml-bar"><button class="tool" id="apply-xml">Apply XML</button></div>
+    </div>
+  </aside>
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>

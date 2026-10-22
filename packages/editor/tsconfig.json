@@ -1,0 +1,6 @@
+{
+  /* the page (tsconfig.app.json) and its Node side (tsconfig.node.json: the Vite config, the
+     desktop app, the pack API), each with its own settings */
+  "files": [],
+  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }]
+}
