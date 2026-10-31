@@ -369,7 +369,7 @@ export class BitmapData implements IBitmapDrawable {
     draw(source: IBitmapDrawable, matrix: Matrix = null, colorTransform: ColorTransform = null, blendMode: string = null,
         clipRect: Rectangle = null, smoothing: boolean = false): void {
         const m = matrix ? matrix.clone() : new Matrix();
-        if (source instanceof BitmapData && source !== this && this.#onGpuFor(source) && this.#gpuDraw(source, m, colorTransform, blendMode, clipRect)) return;
+        if (source instanceof BitmapData && source !== this && this.#onGpuFor(source) && this.#gpuDraw(source, m, colorTransform, blendMode, clipRect, smoothing)) return;
         // only what is on the stage: the frame's preparation keeps its GPU side current; something drawn off the
         // stage (a text field into a window's bitmap) is drawn on the canvas, as it always was
         if (source instanceof DisplayObject && source.stage != null && this.#onGpu() && (blendMode ?? 'normal') === 'normal' && clipRect == null) {
@@ -389,15 +389,24 @@ export class BitmapData implements IBitmapDrawable {
         this.#cpuWrite();
         const ctx = this.#canvasCtx();
         const direct = isIdentityColor(colorTransform) && !PIXEL_BLENDS.has(blendMode ?? 'normal');
-        const target: Ctx = direct ? ctx : newLayer(this.#width, this.#height);
+        // a bitmap drawn through a layer (a colour transform: a window element drawn half transparent) needs a layer
+        // only where it lands, and is colour-transformed there only, as Flash transforms the source's pixels: a layer
+        // the size of this bitmap had every pixel of it read, transformed and written back for every element drawn
+        let ox = 0, oy = 0, lw = this.#width, lh = this.#height;
+        if (!direct && source instanceof BitmapData && !PIXEL_BLENDS.has(blendMode ?? 'normal')) {
+            const area = landingArea(m, source.#width, source.#height, clipRect, this.#width, this.#height);
+            if (!area) return;
+            [ox, oy, lw, lh] = area;
+        }
+        const target: Ctx = direct ? ctx : newLayer(lw, lh);
         target.save();
         if (clipRect) {
             target.beginPath();
-            target.rect(clipRect.x, clipRect.y, clipRect.width, clipRect.height);
+            target.rect(clipRect.x - ox, clipRect.y - oy, clipRect.width, clipRect.height);
             target.clip();
         }
         if (source instanceof BitmapData) {
-            target.setTransform(m.a, m.b, m.c, m.d, m.tx, m.ty);
+            target.setTransform(m.a, m.b, m.c, m.d, m.tx - ox, m.ty - oy);
             target.imageSmoothingEnabled = smoothing;
             if (direct) target.globalCompositeOperation = COMPOSITE[blendMode ?? 'normal'] ?? 'source-over';
             target.drawImage(source.#canvasFor(), 0, 0);
@@ -410,7 +419,7 @@ export class BitmapData implements IBitmapDrawable {
         target.restore();
         if (!direct) {
             if (!isIdentityColor(colorTransform)) {
-                const img = target.getImageData(0, 0, this.#width, this.#height);
+                const img = target.getImageData(0, 0, lw, lh);
                 applyColorTransform(img.data, colorTransform!);
                 target.putImageData(img, 0, 0);
             }
@@ -418,7 +427,7 @@ export class BitmapData implements IBitmapDrawable {
             if (PIXEL_BLENDS.has(blendMode ?? 'normal')) blendPixels(ctx, target, blendMode!);
             else {
                 ctx.globalCompositeOperation = COMPOSITE[blendMode ?? 'normal'] ?? 'source-over';
-                ctx.drawImage(target.canvas, 0, 0);
+                ctx.drawImage(target.canvas, ox, oy);
             }
             ctx.restore();
             releaseLayer(target);
@@ -1195,19 +1204,46 @@ export class BitmapData implements IBitmapDrawable {
     }
 
     /**
-     * draw() of a bitmap on the GPU, when the GPU can draw it exactly: through a translation or a horizontal or
-     * vertical flip (by whole pixels), a colour transform that only multiplies (by at most 1), the normal blend, and
-     * a clip that is a rectangle. False otherwise (the CPU draws it).
+     * A stretched draw() (a window skin's piece scaled to its slot, a 1x1 piece to a whole area) on the GPU, sampled
+     * at the nearest pixel as the canvas draws it without smoothing: where it lands whole pixels, inside the bitmap and
+     * the clip. Reading a GPU-only piece back to stretch it on the canvas stalled the GPU for every piece of a window
+     * drawn for the first time. False otherwise (the CPU crops a stretched source exactly).
      */
-    #gpuDraw(source: BitmapData, m: Matrix, ct: ColorTransform | null, blendMode: string | null, clipRect: Rectangle | null): boolean {
+    #gpuStretch(source: BitmapData, m: Matrix, tint: number, alpha: number, clipRect: Rectangle | null, smoothing: boolean): boolean {
+        // a source shown smoothed somewhere samples its canvas texture smoothed: drawn on the canvas instead
+        if (smoothing || (source.#smoothUsers > 0 && !source.#gpuCurrent)) return false;
+        const sw = source.#width, sh = source.#height;
+        const w = sw * Math.abs(m.a), h = sh * Math.abs(m.d);
+        if (!Number.isInteger(w) || !Number.isInteger(h)) return false;
+        const left = m.a > 0 ? m.tx : m.tx - w, top = m.d > 0 ? m.ty : m.ty - h;
+        if (left < 0 || top < 0 || left + w > this.#width || top + h > this.#height) return false;
+        if (clipRect && (clipRect.x > left || clipRect.y > top || clipRect.x + clipRect.width < left + w || clipRect.y + clipRect.height < top + h)) return false;
+        const texture = source.#gpuSource(this);
+        this.#gpuWrite();
+        this.#gpu!.enqueue({
+            texture, frame: { x: 0, y: 0, width: sw, height: sh }, matrix: [m.a, 0, 0, m.d, m.tx, m.ty],
+            blend: 'normal', tint, alpha, source,
+        });
+        return true;
+    }
+
+    /**
+     * draw() of a bitmap on the GPU, when the GPU can draw it exactly: through a translation or a horizontal or
+     * vertical flip (by whole pixels), or a stretch along the axes onto whole pixels without smoothing; a colour
+     * transform that only multiplies (by at most 1), the normal blend, and a clip that is a rectangle. False otherwise
+     * (the CPU draws it).
+     */
+    #gpuDraw(source: BitmapData, m: Matrix, ct: ColorTransform | null, blendMode: string | null, clipRect: Rectangle | null,
+        smoothing = false): boolean {
         if (blendMode != null && blendMode !== 'normal') return false;
-        if (m.b !== 0 || m.c !== 0 || Math.abs(m.a) !== 1 || Math.abs(m.d) !== 1 || !Number.isInteger(m.tx) || !Number.isInteger(m.ty)) return false;
+        if (m.b !== 0 || m.c !== 0 || m.a === 0 || m.d === 0 || !Number.isInteger(m.tx) || !Number.isInteger(m.ty)) return false;
         let tint = 0xffffff, alpha = 1;
         if (ct) {
             const t = tintOf(ct);
             if (!t) return false;
             [tint, alpha] = t;
         }
+        if (Math.abs(m.a) !== 1 || Math.abs(m.d) !== 1) return this.#gpuStretch(source, m, tint, alpha, clipRect, smoothing);
         // where the source lands, clipped to the clip rectangle and the bitmap
         const sw = source.#width, sh = source.#height;
         const x0 = m.a > 0 ? m.tx : m.tx - sw, y0 = m.d > 0 ? m.ty : m.ty - sh;
@@ -1432,4 +1468,20 @@ function coprimeStep(n: number): number {
     let step = Math.floor(n * 0.618) | 1;
     while (gcd(step, n) !== 1) step++;
     return step;
+}
+
+/**
+ * The whole-pixel rectangle [x, y, width, height] of a bitmap `width` x `height` that a `sw` x `sh` source drawn
+ * through `m` can touch, within `clip`; null when it touches none of it.
+ */
+function landingArea(m: Matrix, sw: number, sh: number, clip: Rectangle | null, width: number, height: number): [number, number, number, number] | null {
+    const xs = [m.tx, m.a * sw + m.tx, m.c * sh + m.tx, m.a * sw + m.c * sh + m.tx];
+    const ys = [m.ty, m.b * sw + m.ty, m.d * sh + m.ty, m.b * sw + m.d * sh + m.ty];
+    let left = Math.max(0, Math.floor(Math.min(...xs))), top = Math.max(0, Math.floor(Math.min(...ys)));
+    let right = Math.min(width, Math.ceil(Math.max(...xs))), bottom = Math.min(height, Math.ceil(Math.max(...ys)));
+    if (clip) {
+        left = Math.max(left, Math.floor(clip.x)); top = Math.max(top, Math.floor(clip.y));
+        right = Math.min(right, Math.ceil(clip.x + clip.width)); bottom = Math.min(bottom, Math.ceil(clip.y + clip.height));
+    }
+    return right > left && bottom > top ? [left, top, right - left, bottom - top] : null;
 }
