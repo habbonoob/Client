@@ -84,9 +84,11 @@ export class Animation implements IAnimation {
         if (param2.hasOwnProperty("override")) {
             this._overrideFrames = new UtilsMap();
             this._overriddenActions = new UtilsMap();
-            for (const _loc4_ of param2.child("_SafeStr_7705") ?? []) {
+            // the decompile names the <override> elements and their override= attribute by a wrong placeholder, so none
+            // were read and an effect drawn only in its overrides (the Ghost Sheet) drew nothing
+            for (const _loc4_ of param2.child("override") ?? []) {
                 _loc5_ = _loc4_.attribute("name").toString();
-                _loc7_ = _loc4_.attribute("_SafeStr_7705").toString();
+                _loc7_ = _loc4_.attribute("override").toString();
                 this._overriddenActions.add(_loc7_, _loc5_);
                 _loc3_ = [];
                 this.parseFrames(_loc3_, _loc4_.child("frame"), param1);

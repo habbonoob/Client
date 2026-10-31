@@ -89,7 +89,9 @@ export class GeometryBodyPart extends Node3D {
             return false;
         }
         if (this._SafeStr_2462.get(param2) === undefined) {
-            this._SafeStr_2462.set(param2, new Dictionary());
+            // the parts are read back by valuesOf/keysOf and written as properties: a plain object holds them for both, where
+            // a Dictionary (a Map) kept the properties out of its entries and the parts an effect adds (the Ghost Sheet) were lost
+            this._SafeStr_2462.set(param2, {});
         }
         this._SafeStr_2462.get(param2)[_loc3_] = new GeometryItem(param1, true);
         return true;
