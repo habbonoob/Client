@@ -86,8 +86,8 @@ export interface QueuedDraw {
     frame?: Frame;
     /** The sprite's transform (a, b, c, d, tx, ty). */
     matrix: [number, number, number, number, number, number];
-    /** 'normal' composites over, 'none' replaces. */
-    blend: 'normal' | 'none';
+    /** 'normal' composites over, 'none' replaces, 'add' adds (Flash's ADD: the canvas's 'lighter'). */
+    blend: 'normal' | 'none' | 'add';
     /** Multiplied into the colour (0xRRGGBB, each channel at most 1) and the alpha. */
     tint: number;
     alpha: number;

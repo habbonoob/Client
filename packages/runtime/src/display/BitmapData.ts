@@ -369,7 +369,20 @@ export class BitmapData implements IBitmapDrawable {
     draw(source: IBitmapDrawable, matrix: Matrix = null, colorTransform: ColorTransform = null, blendMode: string = null,
         clipRect: Rectangle = null, smoothing: boolean = false): void {
         const m = matrix ? matrix.clone() : new Matrix();
-        if (source instanceof BitmapData && source !== this && this.#onGpuFor(source) && this.#gpuDraw(source, m, colorTransform, blendMode, clipRect, smoothing)) return;
+        if (source instanceof BitmapData && source !== this && this.#onGpuFor(source)) {
+            if (this.#gpuDraw(source, m, colorTransform, blendMode, clipRect, smoothing)) return;
+            // a colour transform a tint cannot apply exactly (an alpha between two 255ths: a window element drawn at 30%)
+            // is applied to a copy on the GPU as the CPU computes it, and the copy drawn: drawn on the canvas instead, this
+            // bitmap went to the CPU, and every GPU element copied into it after was read back
+            if (!isIdentityColor(colorTransform) && tintOf(colorTransform!) == null) {
+                const copy = new BitmapData(source.#width, source.#height, true, 0);
+                copy.copyPixels(source, source.rect, new Point());
+                copy.colorTransform(copy.rect, colorTransform!);
+                const drawn = this.#gpuDraw(copy, m, null, blendMode, clipRect, smoothing);
+                copy.dispose();
+                if (drawn) return;
+            }
+        }
         // only what is on the stage: the frame's preparation keeps its GPU side current; something drawn off the
         // stage (a text field into a window's bitmap) is drawn on the canvas, as it always was
         if (source instanceof DisplayObject && source.stage != null && this.#onGpu() && (blendMode ?? 'normal') === 'normal' && clipRect == null) {
@@ -383,6 +396,24 @@ export class BitmapData implements IBitmapDrawable {
             layer.#gpuDrawDisplay(source, m);
             layer.colorTransform(layer.rect, colorTransform!);
             this.draw(layer);
+            layer.dispose();
+            return;
+        }
+        // off the stage (a window's text drawn into its bitmap): drawn on a canvas layer of its own, only where it lands,
+        // and that layer drawn here on the GPU. Drawn on this bitmap's canvas, it read the GPU pixels back first and kept
+        // the bitmap on the CPU, so every element copied into it after was read back too: a stall each, the most of a
+        // window's first drawing. The text composites over the layer's transparency as it would over these pixels, and a
+        // colour transform (a highlighted label) is applied to the layer on the GPU (see the bitmap case above).
+        if (source instanceof DisplayObject && source.stage == null && this.#onGpu() && (blendMode ?? 'normal') === 'normal') {
+            const area = boundsLanding(m, source.getBounds(source), clipRect, this.#width, this.#height);
+            if (!area) return;
+            const [ox, oy, lw, lh] = area;
+            const layer = new BitmapData(lw, lh, true, 0);
+            layer.#stayCpu = true;
+            const at = m.clone();
+            at.translate(-ox, -oy);
+            layer.draw(source, at, null, null, clipRect ? new Rectangle(clipRect.x - ox, clipRect.y - oy, clipRect.width, clipRect.height) : null, smoothing);
+            this.draw(layer, new Matrix(1, 0, 0, 1, ox, oy), colorTransform);
             layer.dispose();
             return;
         }
@@ -797,6 +828,14 @@ export class BitmapData implements IBitmapDrawable {
             this.#gpu.flush();
             return this.#gpu.texture;
         }
+        // a new bitmap shown before anything is drawn into it (a window's drawing buffer) is shown from a render texture,
+        // so what is drawn into it next stays on the GPU: a canvas made for it here kept it on the CPU, and everything
+        // copied into it from the GPU (each element of the window) was read back
+        if (this.#fillOnly != null && !this.#stayCpu && gpuAvailable()) {
+            this.#gpuWrite();
+            this.#gpu!.flush();
+            return this.#gpu!.texture;
+        }
         this.#ensureCpu();
         return this.#canvasTexture();
     }
@@ -1060,6 +1099,7 @@ export class BitmapData implements IBitmapDrawable {
         for (const d of surface.draws) {
             const [a, b, c, dd] = d.matrix;
             if (b !== 0 || c !== 0) return false;
+            if (d.blend === 'add') return false;   // the replay composites over or replaces only
             if (d.texture === white) continue;   // a fill
             if (!(d.source instanceof BitmapData) || d.source === this) return false;
             // tinted only alone (GpuSurface.tintQueued): the replay tints what it drew, which is all there is
@@ -1209,7 +1249,8 @@ export class BitmapData implements IBitmapDrawable {
      * the clip. Reading a GPU-only piece back to stretch it on the canvas stalled the GPU for every piece of a window
      * drawn for the first time. False otherwise (the CPU crops a stretched source exactly).
      */
-    #gpuStretch(source: BitmapData, m: Matrix, tint: number, alpha: number, clipRect: Rectangle | null, smoothing: boolean): boolean {
+    #gpuStretch(source: BitmapData, m: Matrix, tint: number, alpha: number, clipRect: Rectangle | null, smoothing: boolean,
+        blend: 'normal' | 'add'): boolean {
         // a source shown smoothed somewhere samples its canvas texture smoothed: drawn on the canvas instead
         if (smoothing || (source.#smoothUsers > 0 && !source.#gpuCurrent)) return false;
         const sw = source.#width, sh = source.#height;
@@ -1222,7 +1263,7 @@ export class BitmapData implements IBitmapDrawable {
         this.#gpuWrite();
         this.#gpu!.enqueue({
             texture, frame: { x: 0, y: 0, width: sw, height: sh }, matrix: [m.a, 0, 0, m.d, m.tx, m.ty],
-            blend: 'normal', tint, alpha, source,
+            blend, tint, alpha, source,
         });
         return true;
     }
@@ -1235,7 +1276,9 @@ export class BitmapData implements IBitmapDrawable {
      */
     #gpuDraw(source: BitmapData, m: Matrix, ct: ColorTransform | null, blendMode: string | null, clipRect: Rectangle | null,
         smoothing = false): boolean {
-        if (blendMode != null && blendMode !== 'normal') return false;
+        // the normal blend, or add (a glow over a window's bar): what the GPU composites as the canvas does
+        if (blendMode != null && blendMode !== 'normal' && blendMode !== 'add') return false;
+        const blend = blendMode === 'add' ? 'add' : 'normal';
         if (m.b !== 0 || m.c !== 0 || m.a === 0 || m.d === 0 || !Number.isInteger(m.tx) || !Number.isInteger(m.ty)) return false;
         let tint = 0xffffff, alpha = 1;
         if (ct) {
@@ -1243,7 +1286,7 @@ export class BitmapData implements IBitmapDrawable {
             if (!t) return false;
             [tint, alpha] = t;
         }
-        if (Math.abs(m.a) !== 1 || Math.abs(m.d) !== 1) return this.#gpuStretch(source, m, tint, alpha, clipRect, smoothing);
+        if (Math.abs(m.a) !== 1 || Math.abs(m.d) !== 1) return this.#gpuStretch(source, m, tint, alpha, clipRect, smoothing, blend);
         // where the source lands, clipped to the clip rectangle and the bitmap
         const sw = source.#width, sh = source.#height;
         const x0 = m.a > 0 ? m.tx : m.tx - sw, y0 = m.d > 0 ? m.ty : m.ty - sh;
@@ -1258,13 +1301,13 @@ export class BitmapData implements IBitmapDrawable {
         // the source pixels that land there
         const fx = m.a > 0 ? left - m.tx : m.tx - right, fy = m.d > 0 ? top - m.ty : m.ty - bottom;
         const fw = right - left, fh = bottom - top;
-        if (m.a === 1 && m.d === 1 && tint === 0xffffff && alpha === 1 && this.#copyQueued(source, fx, fy, fw, fh, left, top, false)) return true;
+        if (blend === 'normal' && m.a === 1 && m.d === 1 && tint === 0xffffff && alpha === 1 && this.#copyQueued(source, fx, fy, fw, fh, left, top, false)) return true;
         const texture = source.#gpuSource(this);
         this.#gpuWrite();
         this.#gpu!.enqueue({
             texture, frame: { x: fx, y: fy, width: fw, height: fh },
             matrix: [m.a, 0, 0, m.d, m.a > 0 ? left : right, m.d > 0 ? top : bottom],
-            blend: 'normal', tint, alpha, source,
+            blend, tint, alpha, source,
         });
         return true;
     }
@@ -1484,4 +1527,14 @@ function landingArea(m: Matrix, sw: number, sh: number, clip: Rectangle | null, 
         right = Math.min(right, Math.ceil(clip.x + clip.width)); bottom = Math.min(bottom, Math.ceil(clip.y + clip.height));
     }
     return right > left && bottom > top ? [left, top, right - left, bottom - top] : null;
+}
+
+/**
+ * The whole-pixel rectangle [x, y, width, height] of a bitmap `width` x `height` that `bounds` (in a source's own space)
+ * drawn through `m` can touch, within `clip`; null when it touches none of it.
+ */
+function boundsLanding(m: Matrix, bounds: Rectangle, clip: Rectangle | null, width: number, height: number): [number, number, number, number] | null {
+    if (!(bounds.width > 0 && bounds.height > 0)) return null;
+    const shifted = new Matrix(m.a, m.b, m.c, m.d, m.a * bounds.x + m.c * bounds.y + m.tx, m.b * bounds.x + m.d * bounds.y + m.ty);
+    return landingArea(shifted, bounds.width, bounds.height, clip, width, height);
 }
