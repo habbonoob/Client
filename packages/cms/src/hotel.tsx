@@ -8,6 +8,21 @@ import { hotelName, useAccount } from '@/session';
 const clientPath = import.meta.env.VITE_CLIENT_PATH ?? '/client/';
 const clientServer = import.meta.env.VITE_CLIENT_SERVER ?? 'hotel';
 
+/** The renderer the client is opened with, for a machine whose WebGL draws the windows wrong: ?renderer=canvas (or
+ * webgpu) on any of the website's pages is remembered on that browser, and ?renderer=webgl goes back to the default.
+ * Read as the page loads, before the website's redirects drop the query. */
+const rendererKey = 'hotel.renderer';
+const renderer = (() => {
+    const asked = new URLSearchParams(location.search).get('renderer');
+    try {
+        if (asked === 'canvas' || asked === 'webgpu') localStorage.setItem(rendererKey, asked);
+        else if (asked) localStorage.removeItem(rendererKey);
+        return localStorage.getItem(rendererKey);
+    } catch {
+        return asked === 'canvas' || asked === 'webgpu' ? asked : null;
+    }
+})();
+
 /** The route the hotel is shown on. */
 export const hotelRoute = '/hotel';
 
@@ -47,7 +62,8 @@ export function HotelProvider({ children }: { children: ReactNode }) {
         setFailed(false);
         try {
             const { ssoTicket } = await api.hotelTicket();
-            setSrc(`${clientPath}?server=${encodeURIComponent(clientServer)}&ticket=${encodeURIComponent(ssoTicket)}`);
+            setSrc(`${clientPath}?server=${encodeURIComponent(clientServer)}&ticket=${encodeURIComponent(ssoTicket)}`
+                + (renderer ? `&renderer=${encodeURIComponent(renderer)}` : ''));
             navigate(hotelRoute);
         } catch {
             setFailed(true);

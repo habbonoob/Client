@@ -44,7 +44,11 @@ export function prepareNativeFont(bundle: NativeFontBundle): NativeFont {
     // each glyph is decoded (and its user id checked) when first drawn
     const glyphs = new GlyphTable(bundle.nativeProfile.glyphs);
     const swf = bundle.swfFont;
-    const swfGlyphs = new Map(swf.glyphs.map(g => [g.code, g]));
+    // "¬" (U+00AC) is the one glyph whose advance came out of the bundles negative, in every font (Volter's -13199
+    // where its digits have 13653): laid out as it is, the pen went back and the rest of a line was drawn over what
+    // came before it ("Kebab Shop ¬ ΩHALALΩ"). It is the glyph's unsigned 16-bit advance read as signed: Habbo's Volter
+    // draws "¬" as a swirl some 22 pixels wide, and 52337 (65536 - 13199) is 23 pixels at size 9.
+    const swfGlyphs = new Map(swf.glyphs.map(g => [g.code, g.advance < 0 ? { ...g, advance: g.advance + 0x10000 } : g]));
     for (const code of glyphs.keys()) if (!swfGlyphs.has(code)) throw new Error(`DefineFont3 metrics are missing U+${code.toString(16).toUpperCase()}`);
     return {
         fontKey: bundle.fontKey, glyphs, swfFont: swf, swfGlyphs,

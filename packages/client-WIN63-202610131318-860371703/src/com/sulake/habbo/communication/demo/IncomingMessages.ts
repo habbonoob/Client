@@ -129,11 +129,12 @@ export class IncomingMessages {
         _loc4_.writeBytes(CryptoTools.hexStringToByteArray(_loc2_.encryptedGenerator));
         let _loc5_: ByteArray = new ByteArray();
         let _loc8_: ByteArray = new ByteArray();
-        // ?server=dev is our own hotel (the Habbo server repository), which signs the handshake with its own key
-        // (appsettings.Local.json); any other server is Habbo's, with the key this build ships
-        this._rsa = new URLSearchParams(location.search).get("server") === "dev"
-            ? RSAKey.parsePublicKey("86851dd364d5c5cece3c883171cc6ddc5760779b992482bd1e20dd296888df91b33b936a7b93f06d29e8870f703a216257dec7c81de0058fea4cc5116f75e6efc4e9113513e45357dc3fd43d4efab5963ef178b78bd61e81a14c603b24c8bcce0a12230b320045498edc29282ff0603bc7b7dae8fc1b05b52b2f301a9dc783b7", "3")
-            : RSAKey.parsePublicKey(_SafeCls_6000._SafeStr_14011(-1820302793), "10001");
+        // Habbo's own hotels sign the handshake with the key this build ships: one named (?server=hhus, hhbr, ...), or reached
+        // the way only they are (through the relay, or with a ticket fetched from habbo.com: ?relay=, ?autoRequestSSO=1); any
+        // other server is our own hotel (the Habbo server repository: ?server=dev here, none when deployed), with its own key
+        this._rsa = /^hh/.test(new URLSearchParams(location.search).get("server") ?? "") || new URLSearchParams(location.search).has("relay") || new URLSearchParams(location.search).get("autoRequestSSO") === "1"
+            ? RSAKey.parsePublicKey(_SafeCls_6000._SafeStr_14011(-1820302793), "10001")
+            : RSAKey.parsePublicKey("86851dd364d5c5cece3c883171cc6ddc5760779b992482bd1e20dd296888df91b33b936a7b93f06d29e8870f703a216257dec7c81de0058fea4cc5116f75e6efc4e9113513e45357dc3fd43d4efab5963ef178b78bd61e81a14c603b24c8bcce0a12230b320045498edc29282ff0603bc7b7dae8fc1b05b52b2f301a9dc783b7", "3");
         this._rsa.verify(_loc3_, _loc5_, _loc3_.length);
         this._rsa.verify(_loc4_, _loc8_, _loc4_.length);
         let _loc11_: BigInteger = new BigInteger(_loc5_.toString(), 10);

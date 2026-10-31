@@ -173,3 +173,9 @@ origins.discord.link=https://discord.gg/habbo-origins
 collectibles.discord.link=https://discord.gg/habbo-nft
 
 wired.api.docs.link=https://www.habbo.com/api/public/api-docs/#/
+
+# client-next: a room without a background toner stands on a top-to-bottom
+# gradient instead of black; the colours are hex
+room.background.gradient.enabled=true
+room.background.gradient.top=0C5A7F
+room.background.gradient.bottom=0C3A65

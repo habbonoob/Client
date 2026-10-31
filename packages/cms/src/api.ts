@@ -48,6 +48,10 @@ export interface RoomImportResult {
     errors: string[];
     /** The wired boxes set up as they were (copied with :copy wired). */
     wiredBoxes: number;
+    /** The teleports linked as they were there. */
+    linkedTeleports: number;
+    /** The teleports that lead nowhere: their partner stood in another room, or the copy is older than format 4. */
+    unlinkedTeleports: number;
 }
 
 /** What a refused registration says went wrong (RegisterError on the server). */

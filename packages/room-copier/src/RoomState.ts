@@ -13,6 +13,8 @@ export interface FloorItem {
     data: RoomCopyItemData;
     /** The class name the client is sent for some items (staticClass), when it is. */
     className: string | null;
+    /** The number Habbo sends everyone with each floor item: for a teleport, the id of the teleport it is linked to. */
+    extra: number;
 }
 
 /** A wall item as the client was told it (its ItemMessageData). */
@@ -190,6 +192,7 @@ export class RoomState {
             direction: Math.round(o.dir / 45) % 8,
             data: itemData(o.data),
             className: o.staticClass || null,
+            extra: Number.isFinite(o.extra) ? o.extra : 0,
         });
     }
 

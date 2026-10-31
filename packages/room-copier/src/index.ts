@@ -160,7 +160,7 @@ class RoomCopier {
         const room = this.#room;
         const names = this.#names;
         return {
-            Format: 3,
+            Format: 4,
             Hotel: hotelOf(packetTaps.port?.host ?? '').domain,
             SourceRoomId: room.roomId,
             Name: room.name.length > 0 ? room.name : `Room ${room.roomId}`,
@@ -188,6 +188,7 @@ class RoomCopier {
                 Data: item.data,
                 SourceId: item.id,
                 Wired: wired.get(item.id) ?? null,
+                Extra: item.extra,
             })),
             WallItems: [...room.wallItems.values()].map(item => ({
                 ClassId: item.type,

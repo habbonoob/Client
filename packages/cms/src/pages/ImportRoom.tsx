@@ -124,9 +124,17 @@ function Result({ result }: { result: RoomImportResult }) {
                 <strong>{result.name} is yours.</strong>
                 <span className="text-ink">
                     {result.floorItems} floor and {result.wallItems} wall items are in it
-                    {result.wiredBoxes > 0 ? `, ${result.wiredBoxes} wired boxes set up as they were` : ''}. Find it in the
-                    hotel's navigator, under My World.
+                    {result.wiredBoxes > 0 ? `, ${result.wiredBoxes} wired boxes set up as they were` : ''}
+                    {result.linkedTeleports > 0 ? `, ${result.linkedTeleports / 2} teleport pairs linked` : ''}. Find it in
+                    the hotel's navigator, under My World.
                 </span>
+                {result.unlinkedTeleports > 0 && (
+                    <span className="text-ink-2">
+                        {result.unlinkedTeleports === 1
+                            ? '1 teleport leads nowhere: its partner stood in another room.'
+                            : `${result.unlinkedTeleports} teleports lead nowhere: their partners stood in other rooms.`}
+                    </span>
+                )}
             </div>
             {left > 0 && (
                 <div className="flex flex-col gap-3 rounded-[20px] border border-line bg-surface px-[22px] py-5">

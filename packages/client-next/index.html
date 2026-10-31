@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Habbo</title>
     <style>html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }</style>
+    <!-- the canvas is drawn at one pixel per CSS pixel: on a Retina (2x) screen the browser enlarges it, sharp rather
+         than smoothed, as Habbo's pixel art wants; below 2x (125%, 150%) uneven pixels look worse than smoothing -->
+    <style>@media (min-resolution: 2dppx), (-webkit-min-device-pixel-ratio: 2) { canvas { image-rendering: pixelated; } }</style>
   </head>
   <body>
     <script type="module" src="/src/main.ts"></script>

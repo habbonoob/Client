@@ -5,7 +5,7 @@
  */
 export class TextFormat {
     font: string | null;
-    size: number | null;
+    #size: number | null = null;
     color: number | null;
     bold: boolean | null;
     italic: boolean | null;
@@ -42,6 +42,16 @@ export class TextFormat {
         this.leading = leading;
     }
 
+    /** The size in pixels: Flash keeps whole sizes only, rounding a fraction to the nearest, a half to the even one (a
+     * chat font of 9 at the 1.15 chat size is drawn at 10, not 10.35). */
+    get size(): number | null {
+        return this.#size;
+    }
+
+    set size(value: number | null) {
+        this.#size = value == null ? null : roundToEven(Number(value));
+    }
+
     /** The properties this format specifies (non-null), for copying onto another. */
     static readonly PROPERTIES = ['font', 'size', 'color', 'bold', 'italic', 'underline', 'url', 'target', 'align', 'leftMargin',
         'rightMargin', 'indent', 'leading', 'blockIndent', 'bullet', 'kerning', 'letterSpacing', 'tabStops'] as const;
@@ -59,4 +69,11 @@ export class TextFormat {
         f.display = this.display;
         return f;
     }
+}
+
+/** The nearest whole number, a half going to the even one (ECMAScript's ToNumber then IEEE round-half-even). */
+function roundToEven(v: number): number {
+    if (!Number.isFinite(v)) return v;
+    const r = Math.round(v);
+    return r - v === 0.5 && r % 2 !== 0 ? r - 1 : r;
 }

@@ -1,10 +1,10 @@
 /**
- * A room copy as the Habbo server's room import reads it (Habbo.Domain.Rooms.Copies.RoomCopy, format 3), field for
+ * A room copy as the Habbo server's room import reads it (Habbo.Domain.Rooms.Copies.RoomCopy, format 4), field for
  * field and named as its JSON is: the G-Earth copier (tools/Habbo.RoomCopier) writes the same. The relay checks it
  * against that record before saving it.
  */
 export interface RoomCopy {
-    Format: 3;
+    Format: 4;
     /** Where it was copied from: the hotel's domain (com, fi, com.br, ...). */
     Hotel: string;
     SourceRoomId: number;
@@ -45,6 +45,8 @@ export interface RoomCopyFloorItem {
     /** Its id on the hotel it came from, which wired boxes pick it by. */
     SourceId: number;
     Wired: RoomCopyWired | null;
+    /** The number Habbo sends with it: for a teleport, the SourceId of the teleport it is linked to. */
+    Extra: number;
 }
 
 export interface RoomCopyWallItem {

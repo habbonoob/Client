@@ -230,6 +230,11 @@ export class RoomDesktop implements IRoomDesktop, IRoomWidgetMessageListener, IR
     private _zoomChangedMillis: number = 0;
     private _SafeStr_3542: ColorTransitioner = null;
     private _roomBackgroundColor: number = 0;
+    /** (patch room-background-gradient) The order a 4x4 ordered dither lights its pixels in. */
+    private static readonly BAYER_4X4: number[] = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+    /** (patch room-background-gradient) The dithered gradient strip, and the height and colours it was made for. */
+    private _backgroundGradient: BitmapData = null;
+    private _backgroundGradientKey: string = "";
 
     declare private _SafeStr_2990: Timer;
 
@@ -1297,6 +1302,12 @@ export class RoomDesktop implements IRoomDesktop, IRoomWidgetMessageListener, IR
         }
         _loc12_.setDisplayObject(_loc2_);
         _loc12_.addEventListener("WE_RESIZED", this.resizeBackgroundColorizer);
+        // (patch room-background-gradient) the layout starts the wrapper hidden, at its size, and only a toner shows
+        // it: the gradient is shown and drawn now
+        if (this.usesBackgroundGradient) {
+            _loc12_.visible = true;
+            this.fillBackgroundColorizer(_loc12_);
+        }
         if (this._SafeStr_2171.isSpectatorMode) {
             _loc6_ = this.getSpectatorModeVisualization();
             if (_loc6_ != null) {
@@ -1437,9 +1448,59 @@ export class RoomDesktop implements IRoomDesktop, IRoomWidgetMessageListener, IR
             return;
         }
         _loc2_.graphics.clear();
-        _loc2_.graphics.beginFill(this._roomBackgroundColor);
+        if (this._roomBackgroundColor == 0 && this.usesBackgroundGradient) {
+            _loc2_.graphics.beginBitmapFill(this.backgroundGradient(param1.height), null, true, false);
+        } else {
+            _loc2_.graphics.beginFill(this._roomBackgroundColor);
+        }
         _loc2_.graphics.drawRect(0, 0, param1.width, param1.height);
         _loc2_.graphics.endFill();
+    }
+
+    /** (patch room-background-gradient) Whether a room without a background toner stands on a top-to-bottom
+     * gradient instead of black: common_configuration's room.background.gradient.enabled. */
+    private get usesBackgroundGradient(): boolean {
+        return this._config != null && this._config.getBoolean("room.background.gradient.enabled");
+    }
+
+    /** (patch room-background-gradient) A gradient colour from the configuration, as hex (0C5A7F); the fallback when
+     * it gives none or one that isn't hex. */
+    private gradientColor(param1: string, param2: number): number {
+        const hex: string = this._config != null ? this._config.getProperty(param1) : "";
+        return /^[0-9a-f]{6}$/i.test(hex ?? "") ? parseInt(hex, 16) : param2;
+    }
+
+    /** (patch room-background-gradient) The gradient as a strip as tall as the room view, tiled across it: each row's
+     * colour is worked out exactly and dithered with a 4x4 ordered pattern, so the 8-bit steps between colours don't
+     * show as bands. Kept until the height or the colours change. */
+    private backgroundGradient(param1: number): BitmapData {
+        const height: number = Math.max(1, Math.ceil(param1));
+        const top: number = this.gradientColor("room.background.gradient.top", 0x0C5A7F);
+        const bottom: number = this.gradientColor("room.background.gradient.bottom", 0x0C3A65);
+        const key: string = `${height}:${top}:${bottom}`;
+        if (this._backgroundGradient != null && this._backgroundGradientKey == key) {
+            return this._backgroundGradient;
+        }
+        this._backgroundGradient?.dispose();
+        const strip: BitmapData = new BitmapData(4, height, false, 0);
+        strip.lock();
+        for (let y = 0; y < height; y++) {
+            const along: number = height > 1 ? y / (height - 1) : 0;
+            for (let x = 0; x < 4; x++) {
+                const threshold: number = (RoomDesktop.BAYER_4X4[(y & 3) * 4 + x] + 0.5) / 16;
+                let color: number = 0;
+                for (const shift of [16, 8, 0]) {
+                    const from: number = top >> shift & 0xFF;
+                    const to: number = bottom >> shift & 0xFF;
+                    color |= Math.min(255, Math.floor(from + (to - from) * along + threshold)) << shift;
+                }
+                strip.setPixel(x, y, color);
+            }
+        }
+        strip.unlock();
+        this._backgroundGradient = strip;
+        this._backgroundGradientKey = key;
+        return strip;
     }
 
     public setRoomViewColor(param1: number, param2: number): void {
@@ -1494,7 +1555,11 @@ export class RoomDesktop implements IRoomDesktop, IRoomWidgetMessageListener, IR
             return;
         }
         if (this.roomBackgroundColor == 0) {
-            _loc2_.visible = false;
+            // (patch room-background-gradient) without a toner the gradient shows, when it is asked for
+            _loc2_.visible = this.usesBackgroundGradient;
+            if (_loc2_.visible) {
+                this.fillBackgroundColorizer(_loc2_);
+            }
         } else {
             _loc2_.visible = true;
             this.fillBackgroundColorizer(_loc2_);
